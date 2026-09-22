@@ -127,20 +127,26 @@
       token: localStorage.getItem('admin_token') || null,
 
       async login(email, password) {
-        const res = await fetch(this.url + '/auth/v1/token?grant_type=password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': this.key },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (data.access_token) {
-          this.token = data.access_token;
-          localStorage.setItem('admin_token', this.token);
-          this.showDashboard();
-          this.loadRespostas();
-          return true;
+        try {
+          const res = await fetch(this.url + '/auth/v1/token?grant_type=password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': this.key },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          console.log('Login response:', data);
+          if (data.access_token) {
+            this.token = data.access_token;
+            localStorage.setItem('admin_token', this.token);
+            this.showDashboard();
+            this.loadRespostas();
+            return true;
+          }
+          throw new Error(data.error_description || data.msg || 'Erro ao fazer login');
+        } catch (err) {
+          console.error('Login error:', err);
+          throw err;
         }
-        throw new Error(data.error_description || 'Erro ao fazer login');
       },
 
       logout() {
