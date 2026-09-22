@@ -227,7 +227,6 @@
             <td>${interesse}</td>
             <td><div class="btn-download">
               <button onclick="app.exportIndividualCSV('${rStr}')">CSV</button>
-              <button onclick="app.exportIndividualPDF('${rStr}')">PDF</button>
               </div></td>
           </tr>`;
         }).join('');
@@ -282,14 +281,7 @@
         link.click();
       },
 
-      exportIndividualPDF(rStr) {
-        const r = JSON.parse(rStr);
-        const objs = Array.isArray(r.objetivo) ? r.objetivo.join(', ') : r.objetivo || '';
-        const html = `<style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5}h2{font-size:14pt;margin:0 0 15pt 0}p{margin:5pt 0;font-size:10pt}</style><h2>${r.nome}</h2><p><b>Ocupação:</b> ${r.ocupacao || '-'}</p><p><b>Cidade:</b> ${r.cidade || '-'}</p><p><b>Objetivo:</b> ${objs}</p><p><b>Data:</b> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
-        const element = document.createElement('div');
-        element.innerHTML = html;
-        html2pdf().set({margin:8, filename:`resposta-${r.nome}.pdf`}).from(element).save();
-      },
+,
 
     };
 
