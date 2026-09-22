@@ -209,28 +209,12 @@ h1{
   inset:-40px !important;
   background:#b8bfbb url("welcome-moromizato/fundo-logo-dourado.jpg") center 30% / cover no-repeat;
   filter:blur(12px);
+  transition:filter .3s ease, background-image .3s ease;
+}
+.fbg.transition-active{
+  filter:none;
 }
 .fveil{background:rgba(250,247,240,.5)}
-
-/* TRANSIÇÃO COM IMAGEM */
-.transition-overlay{
-  position:fixed;inset:0;z-index:999;
-  display:none;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.95);
-}
-.transition-overlay.active{
-  display:flex !important;
-  animation:fadeIn .4s ease-out forwards;
-}
-.transition-overlay img{
-  width:85%;height:85%;object-fit:cover;
-  filter:blur(10px);
-  animation:zoomIn .6s ease-out forwards;
-  border-radius:12px;
-  box-shadow:0 20px 60px rgba(0,0,0,.8);
-}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes zoomIn{from{transform:scale(0.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
 .erro{font-size:14px;line-height:1.4;color:#9b2c1d;text-align:center;margin-bottom:10px}
 .go{
   width:100%;height:56px;border:0;border-radius:999px;
@@ -261,9 +245,6 @@ h1{
 </style>
 </head>
 <body class="pre">
-
-<!-- TRANSIÇÃO COM IMAGEM -->
-<div class="transition-overlay" id="transitionOverlay"></div>
 
 <!-- ============ BOAS-VINDAS ============ -->
 <main class="card" id="card">
@@ -490,17 +471,25 @@ function ir(dir, fn){
 }
 
 function showTransition(imgPath){
-  const overlay = document.getElementById('transitionOverlay');
-  overlay.innerHTML = `<img src="${imgPath}" alt="Transição" onerror="console.error('Imagem não carregada: ' + this.src)">`;
-  overlay.classList.add('active');
+  const fbg = document.querySelector('.form > .fbg');
   console.log('Transição iniciada:', imgPath);
+
+  // Remover blur e trocar para nova imagem
+  fbg.style.backgroundImage = `url("${imgPath}")`;
+  fbg.classList.add('transition-active');
+
+  // Depois de 1.5 segundos, voltar ao normal
   setTimeout(()=>{
+    fbg.style.backgroundImage = `url("welcome-moromizato/fundo-logo-dourado.jpg")`;
+    fbg.classList.remove('transition-active');
     console.log('Transição concluída');
-    overlay.classList.remove('active');
-    idx++;
-    render();
-    setTimeout(()=>{ overlay.innerHTML = ''; }, 300);
-  }, 2000);
+
+    // Esperar transição CSS terminar e depois avançar
+    setTimeout(()=>{
+      idx++;
+      render();
+    }, 300);
+  }, 1500);
 }
 
 function avancar(){
