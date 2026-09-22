@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pré-consulta · Instituto Moromizato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#ffffff;
+  --ink:#ffffff;
+  --ink-soft:rgba(255,255,255,.82);
+  --glass:rgba(255,255,255,.16);
+  --glass-line:rgba(255,255,255,.22);
+  --dark:#14100e;
+  --gold:#b8912f;
+  --gold-grad:linear-gradient(160deg,#ecd07a 0%,#c9a24a 55%,#a8842e 100%);
+  --gold-soft:#f6eed6;
+  --gold-line:#dcc989;
+  --ivory:#faf7f0;
+  --text:#1c1712;
+  --muted:#4f473c;
+  --line:#e6dfcf;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  background:var(--page);
+  font-family:"Outfit",system-ui,sans-serif;
+  color:var(--ink);
+  display:grid;place-items:center;
+  overflow:hidden;
+}
+[hidden]{display:none !important}
+
+.card{
+  position:relative;
+  width:min(390px,100vw);
+  height:min(760px,100dvh);
+  border-radius:28px;
+  overflow:hidden;
+  background:var(--dark);
+  box-shadow:0 30px 80px rgba(0,0,0,.22);
+  isolation:isolate;
+}
+@media (max-width:480px){ .card{ width:100vw;height:100dvh;border-radius:0;box-shadow:none } }
+
+/* ============ BOAS-VINDAS ============ */
+.bg{position:absolute;inset:0;z-index:-2;overflow:hidden}
+.bg .media{
+  position:absolute;inset:-6%;
+  width:112%;height:112%;object-fit:cover;
+  background:#b8bfbb url("welcome-moromizato/fundo-logo-dourado.jpg") center top / auto 94% no-repeat;
+  transform:scale(1.18);
+  transition:transform 1.8s var(--ease), filter 1s var(--ease);
+  animation:drift 22s ease-in-out infinite alternate;
+}
+@keyframes drift{ from{translate:-1.5% 0} to{translate:1.5% -1%} }
+.gold{
+  position:absolute;inset:0;opacity:.3;
+  background:linear-gradient(160deg,#ecd07a 0%,#c9a24a 45%,#8f6b22 100%);
+}
+.shade{
+  position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(to bottom, rgba(0,0,0,.05) 0%, rgba(0,0,0,0) 40%, rgba(12,8,6,.6) 66%, rgba(12,8,6,.94) 100%);
+}
+.content{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:0 22px calc(22px + env(safe-area-inset-bottom));
+}
+.eyebrow{font-size:14px;line-height:1.5;color:var(--ink-soft);max-width:30ch;margin-bottom:14px}
+.eyebrow b{color:var(--ink);font-weight:600}
+h1{
+  font-size:clamp(38px,11vw,48px);
+  line-height:1.04;font-weight:600;letter-spacing:-.02em;margin-bottom:8px;
+}
+.meta{font-size:19px;font-weight:300;color:var(--ink-soft);margin-bottom:26px}
+
+.bar{display:flex;gap:10px;align-items:stretch}
+.track{
+  position:relative;flex:1;height:56px;border-radius:999px;
+  background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(40px) saturate(1.4);-webkit-backdrop-filter:blur(40px) saturate(1.4);
+  box-shadow:0 8px 32px rgba(0,0,0,.25), inset 0 0 20px -5px rgba(255,255,255,.45);
+  touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;
+  transition:all .3s cubic-bezier(.32,.72,0,1);
+}
+.track:hover{
+  background:rgba(0,0,0,.42);
+  border-color:rgba(255,255,255,.15);
+  box-shadow:0 12px 40px rgba(0,0,0,.3), inset 0 0 25px -3px rgba(255,255,255,.55);
+}
+.track .label{
+  position:absolute;inset:0;display:flex;align-items:center;padding-left:68px;gap:10px;
+  font-size:14px;color:var(--ink);transition:opacity .2s;
+}
+.chev{display:flex;letter-spacing:-2px;opacity:.7;font-size:15px}
+.chev span{animation:nudge 1.6s infinite}
+.chev span:nth-child(2){animation-delay:.18s}
+@keyframes nudge{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.handle{
+  position:absolute;top:3px;left:3px;
+  width:48px;height:48px;border-radius:50%;
+  background:#fff;color:#14100e;display:grid;place-items:center;
+  cursor:grab;outline-offset:3px;transition:transform .45s var(--ease);
+  box-shadow:0 4px 16px rgba(255,255,255,.4), 0 2px 8px rgba(0,0,0,.12);
+}
+.handle.dragging{cursor:grabbing;transition:none}
+.handle svg{width:22px;height:22px}
+
+/* entrada */
+.enter .media{transform:scale(1.02)}
+.rise{opacity:0;transform:translateY(26px)}
+.enter .rise{
+  opacity:1;transform:none;
+  transition:opacity .8s var(--ease), transform .9s var(--ease);
+  transition-delay:calc(var(--i) * 110ms + 350ms);
+}
+#card{clip-path:inset(0 round 28px);transition:opacity .7s var(--ease), transform .9s var(--ease)}
+.pre #card{opacity:0;transform:translateY(34px) scale(.97)}
+.enter #card{opacity:1;transform:none}
+@media (max-width:480px){ #card{clip-path:none} }
+
+/* saída */
+.leaving .rise{
+  opacity:0;transform:translateY(-34px);
+  transition:opacity .45s ease, transform .6s var(--ease);
+  transition-delay:calc(var(--i) * 60ms);
+}
+.leaving .media{transform:scale(1.35);filter:blur(6px) brightness(.85)}
+.leaving #card{
+  opacity:0;transform:scale(.94) translateY(-18px);
+  transition:opacity .55s ease .35s, transform .9s var(--ease) .1s;
+}
+
+/* ============ FORMULÁRIO ============ */
+.form{
+  background:var(--ivory);color:var(--text);
+  display:flex;flex-direction:column;
+  animation:cardIn .8s var(--ease) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(34px) scale(.97)}to{opacity:1;transform:none}}
+
+.progress{height:4px;background:var(--line);flex:none}
+.progress i{display:block;height:100%;width:0;background:var(--gold-grad);transition:width .6s var(--ease)}
+
+.top{
+  flex:none;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(16px + env(safe-area-inset-top)) 20px 0;
+}
+.nav{
+  width:44px;height:44px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#fff;border:1px solid var(--line);color:var(--text);
+  cursor:pointer;transition:background .2s, border-color .2s;
+}
+.nav:hover{border-color:var(--gold-line);background:var(--gold-soft)}
+.count{font-size:13px;color:var(--muted);letter-spacing:.04em}
+
+.main{flex:1;overflow-y:auto;padding:26px 22px 12px;scrollbar-width:thin;scrollbar-color:var(--gold-line) transparent}
+.stage{transition:opacity .28s ease, transform .4s var(--ease)}
+.stage.out-left{opacity:0;transform:translateX(-28px)}
+.stage.out-right{opacity:0;transform:translateX(28px)}
+.stage.in-right{opacity:0;transform:translateX(28px);transition:none}
+.stage.in-left{opacity:0;transform:translateX(-28px);transition:none}
+
+.q h2{font-size:clamp(24px,7vw,28px);line-height:1.22;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.dica{font-size:14px;color:var(--muted);margin-bottom:6px}
+.campo{margin-top:22px;display:grid;gap:10px}
+
+.txt{
+  width:100%;font:inherit;font-size:22px;color:var(--text);
+  background:rgba(0,0,0,.3);border:0;border-bottom:2px solid var(--gold-line);
+  padding:12px 14px;outline:0;resize:none;transition:border-color .2s;border-radius:20px;
+}
+.txt:focus{border-color:var(--gold)}
+.txt::placeholder{color:#ffffff;opacity:0.9}
+
+.op{
+  display:flex;align-items:center;gap:14px;width:100%;
+  text-align:left;font:inherit;font-size:15px;line-height:1.35;color:var(--text);
+  padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);
+  backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
+  box-shadow:inset 0 0 16px -4px rgba(255,255,255,.25);
+  cursor:pointer;transition:border-color .2s, background .2s, transform .2s var(--ease), box-shadow .2s;
+}
+.op:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);box-shadow:inset 0 0 20px -2px rgba(255,255,255,.35)}
+.op:active{transform:scale(.985)}
+.op .mk{
+  flex:none;width:22px;height:22px;border:1.5px solid #cfc6b1;background:#fff;
+  display:grid;place-items:center;transition:all .2s;
+}
+.op[role="radio"] .mk{border-radius:50%}
+.op[role="checkbox"] .mk{border-radius:7px}
+.op .mk svg{width:13px;height:13px;opacity:0;transform:scale(.5);transition:all .25s var(--ease)}
+.op[aria-checked="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.op[aria-checked="true"] .mk{background:var(--gold-grad);border-color:var(--gold)}
+.op[aria-checked="true"] .mk svg{opacity:1;transform:none}
+
+.foot{flex:none;padding:12px 22px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(250,247,240,.85) 60%,rgba(250,247,240,0))}
+
+/* fundo das perguntas: mesma foto da boas-vindas, desfocada */
+.form > *{position:relative;z-index:1}
+.form > .fbg,.form > .fveil{position:absolute;inset:0;z-index:0;pointer-events:none}
+.fbg{
+  inset:-40px !important;
+  background:#b8bfbb url("welcome-moromizato/fundo-logo-dourado.jpg") center 30% / cover no-repeat;
+  filter:blur(12px);
+}
+.fveil{background:rgba(250,247,240,.5)}
+.erro{font-size:14px;line-height:1.4;color:#9b2c1d;text-align:center;margin-bottom:10px}
+.go{
+  width:100%;height:56px;border:0;border-radius:999px;
+  font:inherit;font-size:16px;font-weight:600;color:var(--text);
+  background:var(--gold-grad);cursor:pointer;
+  transition:transform .2s var(--ease), opacity .2s, background .2s;
+}
+.go:active{transform:scale(.985)}
+.go:disabled{background:#ece6d6;color:#a59d88;cursor:not-allowed}
+
+.done{text-align:center;padding-top:14vh}
+.done svg{width:92px;height:92px;margin-bottom:26px}
+.done circle{fill:none;stroke:var(--gold);stroke-width:3;stroke-dasharray:264;stroke-dashoffset:264;animation:draw .9s var(--ease) .1s forwards}
+.done path{fill:none;stroke:var(--gold);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60;animation:draw .6s var(--ease) .8s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.done h2{font-size:30px;font-weight:600;margin-bottom:10px;opacity:0;animation:fade .7s var(--ease) .9s forwards}
+.done p{font-size:16px;line-height:1.5;color:var(--muted);max-width:28ch;margin:0 auto;opacity:0;animation:fade .7s var(--ease) 1.1s forwards}
+@keyframes fade{to{opacity:1}}
+
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.txt:focus-visible{outline:none}
+
+@media (prefers-reduced-motion: reduce){
+  .bg .media{animation:none}
+  .rise,#card,.leaving .rise,.leaving #card,.enter .rise,.stage,.progress i,.form,.done *{transition-duration:.01s !important;transition-delay:0s !important;animation-duration:.01s !important;animation-delay:0s !important}
+  .chev span{animation:none}
+}
+</style>
+</head>
+<body class="pre">
+
+<!-- ============ BOAS-VINDAS ============ -->
+<main class="card" id="card">
+  <div class="bg">
+    <div class="media" id="media"></div>
+    <div class="gold"></div>
+  </div>
+  <div class="shade"></div>
+
+  <section class="content">
+    <p class="eyebrow rise" style="--i:0">Este formulário nos ajuda a preparar a sua consulta com <b>cuidado e atenção</b>. Leva poucos minutos.</p>
+    <h1 class="rise" style="--i:1">Bem-vindo ao<br>Instituto Moromizato</h1>
+    <p class="meta rise" style="--i:2">Pré-consulta · 14 perguntas</p>
+
+    <div class="bar rise" style="--i:3">
+      <div class="track" id="track">
+        <div class="label" id="label">Deslize para começar <span class="chev" aria-hidden="true"><span>›</span><span>›</span><span>›</span></span></div>
+        <div class="handle" id="handle" role="button" tabindex="0" aria-label="Começar o formulário">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FORMULÁRIO ============ -->
+<section class="card form" id="formCard" hidden aria-live="polite">
+  <div class="fbg" aria-hidden="true"></div>
+  <div class="fveil" aria-hidden="true"></div>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="top">
+    <button class="nav" id="voltar" aria-label="Voltar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="main" id="main"><div class="stage" id="stage"></div></div>
+  <div class="foot">
+    <p class="erro" id="erro" role="alert" hidden>Não conseguimos enviar agora. Verifique sua conexão e tente novamente. Suas respostas continuam aqui.</p>
+    <button class="go" id="avancar" disabled>Continuar</button>
+  </div>
+</section>
+
+<script>
+/* ---------- PERGUNTAS (editar aqui) ---------- */
+const PERGUNTAS = [
+  {id:"nome",       tipo:"texto",   titulo:"Nome completo", auto:"name"},
+  {id:"ocupacao",   tipo:"texto",   titulo:"Ocupação / profissão", auto:"organization-title"},
+  {id:"cidade",     tipo:"texto",   titulo:"Qual cidade reside?", auto:"address-level2"},
+  {id:"objetivo",   tipo:"multipla", titulo:"Qual é seu principal objetivo hoje?", dica:"Pode escolher mais de uma opção",
+    opcoes:["Emagrecimento / Definição","Reposição Hormonal","Menopausa","Lipedema","Performance Física","Hipertrofia / Ganho de massa muscular"]},
+  {id:"tempo",      tipo:"unica",   titulo:"Há quanto tempo esse problema te incomoda?",
+    opcoes:["Menos de 6 meses","6 meses a 1 ano","1 a 3 anos","3 a 5 anos","Mais de 5 anos"]},
+  {id:"impacto",    tipo:"unica",   titulo:"O quanto isso impacta sua autoestima ou qualidade de vida?",
+    opcoes:["Nada","Pouco","Moderadamente","Muito","Extremamente"]},
+  {id:"tentativas", tipo:"unica",   titulo:"O que você já fez para resolver isso?",
+    opcoes:["Nada","Dieta por conta própria","Acompanhamento apenas com Nutricionista","Acompanhamento com médico especialista","Medicação por conta própria","Exercícios físicos e Esportes"]},
+  {id:"cirurgia",   tipo:"texto",   longo:true, titulo:"Já realizou alguma cirurgia plástica ou bariátrica? Se sim, qual?"},
+  {id:"frustracao", tipo:"multipla", titulo:"O que mais te frustra hoje em relação à sua saúde ou corpo?", dica:"Pode marcar mais de uma resposta",
+    opcoes:["Não conseguir emagrecer","Emagreço, mas ganho tudo de novo (EFEITO SANFONA)","Cansaço, indisposição e falta de energia","Sintomas menstruais (Fluxo alto e/ou cólica intensa e/ou TPM e/ou Enxaqueca)","Lipedema (dor nas pernas, inchaço, manchas roxas e não emagrecer pernas)","Falta de desejo sexual e Libido","Não consigo ganhar massa muscular"]},
+  {id:"futuro",     tipo:"unica",   titulo:"Se nada mudar, como você acredita que estará daqui a 2 anos?",
+    opcoes:["Igual","Pior","Muito pior","Prefiro não pensar nisso"]},
+  {id:"sozinho",    tipo:"unica",   titulo:"Você sente que consegue resolver isso sozinho?",
+    opcoes:["Provavelmente sim","Não tenho certeza","Provavelmente não","Não consigo sozinho"]},
+  {id:"prioridade", tipo:"unica",   titulo:"O quanto é prioridade para você resolver isso agora?",
+    opcoes:["Baixa prioridade","Moderada","Alta","É minha prioridade número 1"]},
+  {id:"morofit",    tipo:"unica",   titulo:"Também temos uma academia (Morofit). Teria interesse em treinar nela?",
+    opcoes:["Sim","Não"]},
+  {id:"programa",   tipo:"unica",   titulo:"Você estaria disposto(a) a entrar no programa de acompanhamento exclusivo Moromizato, que inclui exatamente tudo que você precisa para resolver isso definitivamente?",
+    opcoes:["Sim, com certeza","Provavelmente sim","Talvez","Provavelmente não","Não tenho interesse"]},
+];
+const ENDPOINT  = "https://pvqikdeovfgbslfqjmxy.supabase.co/functions/v1/enviar-pre-consulta";
+const VIDEO_SRC = "";   // ex.: "drone-clinica.mp4" (curto, em loop, sem áudio)
+/* --------------------------------------------- */
+
+const $ = id => document.getElementById(id);
+const body = document.body, welcome = $("card"), formCard = $("formCard");
+const track = $("track"), handle = $("handle"), label = $("label");
+const stage = $("stage"), bar = $("bar"), count = $("count"), main = $("main");
+const btnNext = $("avancar"), btnBack = $("voltar"), erro = $("erro");
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#1c1712" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+if (VIDEO_SRC) {
+  const v = document.createElement("video");
+  v.className = "media"; v.src = VIDEO_SRC;
+  v.autoplay = v.loop = v.muted = v.playsInline = true;
+  $("media").replaceWith(v);
+}
+
+/* ---------- boas-vindas: entrada e saída ---------- */
+let busy = false;
+
+function playWelcome(){
+  busy = false;
+  formCard.hidden = true; welcome.hidden = false;
+  handle.style.transform = ""; label.style.opacity = "";
+  body.className = "pre";
+  void welcome.offsetWidth;
+  requestAnimationFrame(()=>{ body.className = "enter"; });
+}
+
+function leaveWelcome(){
+  if (busy) return; busy = true;
+  body.className = "leaving";
+  setTimeout(()=>{
+    body.className = "";
+    welcome.hidden = true;
+    formCard.hidden = false;
+    formCard.style.animation = "none"; void formCard.offsetWidth; formCard.style.animation = "";
+    idx = 0; render();
+  }, 950);
+}
+
+let startX = 0, maxX = 0, dragging = false;
+const limits = () => { maxX = track.clientWidth - handle.offsetWidth - 6; };
+
+handle.addEventListener("pointerdown", e=>{
+  if (busy) return;
+  limits(); dragging = true; startX = e.clientX;
+  handle.setPointerCapture(e.pointerId);
+  handle.classList.add("dragging");
+});
+handle.addEventListener("pointermove", e=>{
+  if (!dragging) return;
+  const dx = Math.max(0, Math.min(maxX, e.clientX - startX));
+  handle.style.transform = `translateX(${dx}px)`;
+  label.style.opacity = String(1 - dx/maxX);
+});
+function release(){
+  if (!dragging) return;
+  dragging = false; handle.classList.remove("dragging");
+  const dx = Math.abs(new DOMMatrix(getComputedStyle(handle).transform).m41);
+  if (dx > maxX * .7 || dx < 4) {
+    handle.style.transform = `translateX(${maxX}px)`;
+    leaveWelcome();
+  } else { handle.style.transform = ""; label.style.opacity = ""; }
+}
+handle.addEventListener("pointerup", release);
+handle.addEventListener("pointercancel", release);
+handle.addEventListener("keydown", e=>{
+  if (e.key === "Enter" || e.key === " " || e.key === "ArrowRight") {
+    e.preventDefault(); limits();
+    handle.style.transform = `translateX(${maxX}px)`; leaveWelcome();
+  }
+});
+
+/* ---------- formulário ---------- */
+const respostas = {};
+window.respostas = respostas;
+let idx = 0, moving = false;
+
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function valido(p){
+  const r = respostas[p.id];
+  if (p.tipo === "multipla") return Array.isArray(r) && r.length > 0;
+  return typeof r === "string" && r.trim().length > 0;
+}
+
+function atualizar(){
+  const p = PERGUNTAS[idx];
+  btnNext.disabled = !valido(p);
+  btnNext.textContent = idx === PERGUNTAS.length - 1 ? "Finalizar" : "Continuar";
+}
+
+function render(){
+  const p = PERGUNTAS[idx];
+  bar.style.width = (idx / PERGUNTAS.length * 100) + "%";
+  count.textContent = `${idx + 1} de ${PERGUNTAS.length}`;
+  btnBack.hidden = false; btnNext.parentElement.hidden = false; erro.hidden = true;
+
+  let campo = "";
+  if (p.tipo === "texto") {
+    const val = esc(respostas[p.id] || "");
+    campo = p.longo
+      ? `<textarea class="txt" id="in" rows="3" placeholder="Digite sua resposta" autocomplete="off">${val}</textarea>`
+      : `<input class="txt" id="in" type="text" placeholder="Digite sua resposta" autocomplete="${p.auto||"off"}" value="${val}">`;
+  } else {
+    const multi = p.tipo === "multipla";
+    const sel = multi ? (respostas[p.id] || []) : [respostas[p.id]];
+    campo = p.opcoes.map((o,i)=>
+      `<button type="button" class="op" role="${multi?"checkbox":"radio"}" aria-checked="${sel.includes(o)}" data-i="${i}"><span class="mk">${CHECK}</span><span>${esc(o)}</span></button>`
+    ).join("");
+  }
+
+  stage.innerHTML = `<div class="q"><h2>${esc(p.titulo)}</h2>${p.dica?`<p class="dica">${esc(p.dica)}</p>`:""}<div class="campo" ${p.tipo!=="texto"?`role="${p.tipo==="multipla"?"group":"radiogroup"}"`:""}>${campo}</div></div>`;
+  main.scrollTop = 0;
+  atualizar();
+
+  const input = $("in");
+  if (input) {
+    input.addEventListener("input", ()=>{ respostas[p.id] = input.value; atualizar(); });
+    input.addEventListener("keydown", e=>{ if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); avancar(); } });
+    setTimeout(()=>input.focus({preventScroll:true}), 450);
+  }
+}
+
+stage.addEventListener("click", e=>{
+  const b = e.target.closest(".op"); if (!b || moving) return;
+  const p = PERGUNTAS[idx], o = p.opcoes[+b.dataset.i];
+  if (p.tipo === "multipla") {
+    const set = new Set(respostas[p.id] || []);
+    set.has(o) ? set.delete(o) : set.add(o);
+    respostas[p.id] = p.opcoes.filter(x => set.has(x));
+    b.setAttribute("aria-checked", set.has(o));
+    atualizar();
+  } else {
+    respostas[p.id] = o;
+    stage.querySelectorAll(".op").forEach(x => x.setAttribute("aria-checked", x === b));
+    atualizar();
+  }
+});
+
+function ir(dir, fn){
+  if (moving) return; moving = true;
+  stage.classList.add(dir > 0 ? "out-left" : "out-right");
+  setTimeout(()=>{
+    fn();
+    stage.className = "stage " + (dir > 0 ? "in-right" : "in-left");
+    void stage.offsetWidth;
+    stage.className = "stage";
+    moving = false;
+  }, 260);
+}
+
+function avancar(){
+  if (moving || !valido(PERGUNTAS[idx])) return;
+  if (idx === PERGUNTAS.length - 1) return enviar();
+  ir(1, ()=>{ idx++; render(); });
+}
+
+let enviando = false;
+async function enviar(){
+  if (enviando) return; enviando = true;
+  erro.hidden = true;
+  btnNext.disabled = true; btnNext.textContent = "Enviando...";
+  try {
+    const r = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(respostas),
+    });
+    if (!r.ok) throw new Error(r.status);
+    enviando = false;
+    ir(1, finalizar);
+  } catch (e) {
+    enviando = false;
+    erro.hidden = false;
+    btnNext.disabled = false; btnNext.textContent = "Tentar novamente";
+  }
+}
+
+function voltar(){
+  if (moving) return;
+  if (idx === 0) { formCard.hidden = true; playWelcome(); return; }
+  ir(-1, ()=>{ idx--; render(); });
+}
+
+function finalizar(){
+  bar.style.width = "100%";
+  count.textContent = "";
+  btnBack.hidden = true; btnNext.parentElement.hidden = true;
+  const nome = (respostas.nome || "").trim().split(/\s+/)[0];
+  stage.innerHTML = `<div class="done">
+    <svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="42"/><path d="M28 47l12 12 24-26"/></svg>
+    <h2>Formulário finalizado</h2>
+    <p>Agradecemos o seu tempo${nome ? ", " + esc(nome) : ""}. Vamos preparar a sua consulta com cuidado e atenção.</p>
+  </div>`;
+}
+
+btnNext.addEventListener("click", avancar);
+btnBack.addEventListener("click", voltar);
+
+playWelcome();
+</script>
+</body>
+</html>
