@@ -210,6 +210,24 @@ h1{
   filter:blur(12px);
 }
 .fveil{background:rgba(250,247,240,.5)}
+
+/* TRANSIÇÃO COM IMAGEM */
+.transition-overlay{
+  position:fixed;inset:0;z-index:999;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.9);
+}
+.transition-overlay.active{
+  display:flex;
+  animation:fadeIn .3s var(--ease);
+}
+.transition-overlay img{
+  width:90%;height:90%;object-fit:cover;
+  filter:blur(8px);
+  animation:zoomIn .8s var(--ease);
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes zoomIn{from{transform:scale(0.95)}to{transform:scale(1)}}
 .erro{font-size:14px;line-height:1.4;color:#9b2c1d;text-align:center;margin-bottom:10px}
 .go{
   width:100%;height:56px;border:0;border-radius:999px;
@@ -240,6 +258,9 @@ h1{
 </style>
 </head>
 <body class="pre">
+
+<!-- TRANSIÇÃO COM IMAGEM -->
+<div class="transition-overlay" id="transitionOverlay"></div>
 
 <!-- ============ BOAS-VINDAS ============ -->
 <main class="card" id="card">
@@ -465,9 +486,33 @@ function ir(dir, fn){
   }, 260);
 }
 
+function showTransition(imgPath){
+  const overlay = document.getElementById('transitionOverlay');
+  overlay.innerHTML = `<img src="${imgPath}" alt="Transição" onerror="console.error('Imagem não carregada: ${imgPath}')">`;
+  overlay.classList.add('active');
+  console.log('Transição iniciada:', imgPath);
+  setTimeout(()=>{
+    console.log('Transição concluída');
+    overlay.classList.remove('active');
+    idx++;
+    render();
+    setTimeout(()=>{ overlay.innerHTML = ''; }, 300);
+  }, 2000);
+}
+
 function avancar(){
   if (moving || !valido(PERGUNTAS[idx])) return;
   if (idx === PERGUNTAS.length - 1) return enviar();
+
+  // Mostrar transição após pergunta 3 (índice 2)
+  if (idx === 2) {
+    console.log('Mostrando transição após pergunta 3');
+    moving = true;
+    showTransition('transicao-1.jpg');
+    setTimeout(()=>{ moving = false; }, 2300);
+    return;
+  }
+
   ir(1, ()=>{ idx++; render(); });
 }
 
