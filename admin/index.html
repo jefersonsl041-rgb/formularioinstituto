@@ -156,12 +156,10 @@
       },
 
       async loadRespostas() {
-        if (!this.token) return;
         try {
           const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
             headers: {
-              'apikey': this.key,
-              'Authorization': 'Bearer ' + this.token
+              'apikey': this.key
             }
           });
           if (!res.ok) throw new Error('Erro ao carregar');
