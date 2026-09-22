@@ -490,7 +490,7 @@ function ir(dir, fn){
 
 function showTransition(imgPath){
   const overlay = document.getElementById('transitionOverlay');
-  overlay.innerHTML = `<img src="${imgPath}" alt="Transição" onerror="console.error('Imagem não carregada: ${imgPath}')">`;
+  overlay.innerHTML = `<img src="${imgPath}" alt="Transição" onerror="console.error('Imagem não carregada: ' + this.src)">`;
   overlay.classList.add('active');
   console.log('Transição iniciada:', imgPath);
   setTimeout(()=>{
