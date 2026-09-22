@@ -22,196 +22,45 @@
       padding: 20px;
     }
     .container { max-width: 1200px; margin: 0 auto; }
-
-    /* LOGIN */
-    .login-card {
-      background: var(--light);
-      border-radius: 16px;
-      padding: 40px;
-      max-width: 400px;
-      margin: 60px auto;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    .login-card h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      color: var(--gold);
-    }
-    .login-card p {
-      color: #999;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--dark);
-    }
-    .form-group input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--gold);
-    }
-    .btn-login {
-      width: 100%;
-      padding: 12px;
-      background: var(--gold);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
+    .login-card { background: var(--light); border-radius: 16px; padding: 40px; max-width: 400px; margin: 60px auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .login-card h1 { font-size: 28px; margin-bottom: 10px; color: var(--gold); }
+    .login-card p { color: #999; margin-bottom: 30px; font-size: 14px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--dark); }
+    .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+    .form-group input:focus { outline: none; border-color: var(--gold); }
+    .btn-login { width: 100%; padding: 12px; background: var(--gold); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.3s; }
     .btn-login:hover { opacity: 0.9; }
     .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
     .error { color: var(--error); font-size: 14px; margin-top: 10px; }
-
-    /* DASHBOARD */
     .dashboard { display: none; }
     .dashboard.active { display: block; }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      background: var(--light);
-      padding: 20px;
-      border-radius: 12px;
-    }
-    .header h1 {
-      color: var(--gold);
-      font-size: 24px;
-    }
-    .header-actions {
-      display: flex;
-      gap: 10px;
-    }
-    .btn-export {
-      padding: 10px 20px;
-      background: var(--gold);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: opacity 0.3s;
-    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: var(--light); padding: 20px; border-radius: 12px; }
+    .header h1 { color: var(--gold); font-size: 24px; }
+    .header-actions { display: flex; gap: 10px; }
+    .btn-export { padding: 10px 20px; background: var(--gold); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: opacity 0.3s; }
     .btn-export:hover { opacity: 0.9; }
-    .btn-logout {
-      padding: 10px 20px;
-      background: #999;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
+    .btn-logout { padding: 10px 20px; background: #999; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
     .btn-logout:hover { background: #777; }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    .stat-card {
-      background: var(--light);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .stat-card .label {
-      color: #999;
-      font-size: 12px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .stat-card .value {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    /* TABELA */
-    .table-wrapper {
-      background: var(--light);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    thead {
-      background: #f5f0e8;
-      border-bottom: 2px solid var(--gold);
-    }
-    th {
-      padding: 16px;
-      text-align: left;
-      font-weight: 600;
-      color: var(--dark);
-    }
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid #e8e8e8;
-    }
-    tbody tr:hover {
-      background: #fefaf5;
-    }
-    .tag {
-      display: inline-block;
-      padding: 4px 12px;
-      background: #e8f4f0;
-      color: #006b63;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .multi-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: var(--light); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .stat-card .label { color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-card .value { font-size: 32px; font-weight: 700; color: var(--gold); }
+    .table-wrapper { background: var(--light); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { background: #f5f0e8; border-bottom: 2px solid var(--gold); }
+    th { padding: 16px; text-align: left; font-weight: 600; color: var(--dark); }
+    td { padding: 12px 16px; border-bottom: 1px solid #e8e8e8; }
+    tbody tr:hover { background: #fefaf5; }
+    .tag { display: inline-block; padding: 4px 12px; background: #e8f4f0; color: #006b63; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .multi-tags { display: flex; flex-wrap: wrap; gap: 4px; }
     .loading { text-align: center; color: #999; padding: 40px; }
-    .btn-download {
-      display: inline-flex;
-      gap: 4px;
-      font-size: 12px;
-    }
-    .btn-download button {
-      padding: 4px 8px;
-      background: var(--gold);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: opacity 0.2s;
-    }
-    .btn-download button:hover {
-      opacity: 0.85;
-    }
+    .btn-download { display: inline-flex; gap: 4px; font-size: 12px; }
+    .btn-download button { padding: 4px 8px; background: var(--gold); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+    .btn-download button:hover { opacity: 0.85; }
   </style>
 </head>
 <body>
-  <!-- LOGIN -->
   <div class="login-card" id="loginCard">
     <h1>Admin</h1>
     <p>Respostas do Instituto Moromizato</p>
@@ -229,18 +78,16 @@
     </form>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="dashboard" id="dashboard">
     <div class="container">
       <div class="header">
         <h1>Respostas de Pré-Consulta</h1>
         <div class="header-actions">
-          <button class="btn-export" onclick="exportarCSV()">📥 CSV Geral</button>
-          <button class="btn-export" onclick="exportarPDF()">📄 PDF Geral</button>
-          <button class="btn-logout" onclick="logout()">Sair</button>
+          <button class="btn-export" onclick="exportCSV()">📥 CSV Geral</button>
+          <button class="btn-export" onclick="exportPDF()">📄 PDF Geral</button>
+          <button class="btn-logout" onclick="handleLogout()">Sair</button>
         </div>
       </div>
-
       <div class="stats">
         <div class="stat-card">
           <div class="label">Total de Respostas</div>
@@ -255,7 +102,6 @@
           <div class="value" id="totalProgramas">0</div>
         </div>
       </div>
-
       <div class="table-wrapper">
         <table>
           <thead>
@@ -270,7 +116,7 @@
             </tr>
           </thead>
           <tbody id="respostasTable">
-            <tr class="loading"><td colspan="6">Carregando...</td></tr>
+            <tr class="loading"><td colspan="7">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -281,83 +127,66 @@
     const SUPABASE_URL = 'https://pvqikdeovfgbslfqjmxy.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu';
     const API = SUPABASE_URL + '/rest/v1';
-    let sbClient = null;
 
-    // Aguardar Supabase SDK carregar e inicializar
-    async function waitForSupabase() {
-      for (let i = 0; i < 50; i++) {
-        if (window.supabase) {
-          sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-          sbClient.auth.onAuthStateChange(async (event, session) => {
-            if (session) {
-              document.getElementById('loginCard').style.display = 'none';
-              document.getElementById('dashboard').classList.add('active');
-              carregarRespostas();
-            } else {
-              document.getElementById('loginCard').style.display = 'block';
-              document.getElementById('dashboard').classList.remove('active');
-            }
-          });
-          return;
-        }
+    let client = null;
+    let session = null;
+
+    async function initApp() {
+      while (!window.supabase) {
         await new Promise(r => setTimeout(r, 100));
       }
-      console.error('Supabase SDK não carregou');
+      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      checkSession();
+      client.auth.onAuthStateChange(updateUI);
     }
 
-    waitForSupabase();
+    async function checkSession() {
+      const { data } = await client.auth.getSession();
+      session = data?.session;
+      updateUI(null, session);
+    }
+
+    function updateUI(evt, sess) {
+      session = sess;
+      if (session) {
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        loadRespostas();
+      } else {
+        document.getElementById('loginCard').style.display = 'block';
+        document.getElementById('dashboard').classList.remove('active');
+      }
+    }
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const senha = document.getElementById('senha').value;
-      const errDiv = document.getElementById('loginError');
-      const btnLogin = document.querySelector('.btn-login');
+      const err = document.getElementById('loginError');
+      const btn = document.querySelector('.btn-login');
 
-      errDiv.textContent = '';
-      btnLogin.disabled = true;
-      btnLogin.textContent = 'Entrando...';
+      err.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Entrando...';
 
-      try {
-        const { data, error } = await sbClient.auth.signInWithPassword({
-          email,
-          password: senha
-        });
-
-        if (error) {
-          errDiv.textContent = 'Email ou senha inválidos.';
-          btnLogin.disabled = false;
-          btnLogin.textContent = 'Entrar';
-          return;
-        }
-
-        // Login bem-sucedido
-        localStorage.setItem('admin_token', data.session.access_token);
-        document.getElementById('loginCard').style.display = 'none';
-        document.getElementById('dashboard').classList.add('active');
-        carregarRespostas();
-        btnLogin.disabled = false;
-        btnLogin.textContent = 'Entrar';
-      } catch (err) {
-        errDiv.textContent = 'Erro ao fazer login. Tente novamente.';
-        btnLogin.disabled = false;
-        btnLogin.textContent = 'Entrar';
+      const { error } = await client.auth.signInWithPassword({ email, password: senha });
+      if (error) {
+        err.textContent = error.message;
       }
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
     });
 
-    async function logout() {
-      await sbClient.auth.signOut();
-      localStorage.removeItem('admin_token');
-      document.getElementById('loginCard').style.display = 'block';
-      document.getElementById('dashboard').classList.remove('active');
+    async function handleLogout() {
+      await client.auth.signOut();
+      session = null;
+      updateUI(null, null);
       document.getElementById('email').value = '';
       document.getElementById('senha').value = '';
     }
 
-    async function carregarRespostas() {
-      const { data: { session } } = await sbClient.auth.getSession();
-      if (!session) return logout();
-
+    async function loadRespostas() {
+      if (!session) return;
       try {
         const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
           headers: {
@@ -365,26 +194,23 @@
             'Authorization': `Bearer ${session.access_token}`
           }
         });
-
         if (!resp.ok) throw new Error('Erro ao carregar');
         const dados = await resp.json();
-        renderizarRespostas(dados);
+        renderRespostas(dados);
       } catch (err) {
-        console.error('Erro:', err);
-        alert('Erro ao carregar respostas');
+        console.error(err);
       }
     }
 
-    function renderizarRespostas(respostas) {
+    function renderRespostas(respostas) {
       const tbody = document.getElementById('respostasTable');
       const agora = Date.now();
       const ontem = agora - 86400000;
-
-      let ultimasRespostas = 0;
+      let ultimas = 0;
       let programas = new Set();
 
-      if (respostas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="loading">Nenhuma resposta ainda</td></tr>';
+      if (!respostas.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="loading">Nenhuma resposta</td></tr>';
         document.getElementById('totalRespostas').textContent = '0';
         document.getElementById('ultimasRespostas').textContent = '0';
         document.getElementById('totalProgramas').textContent = '0';
@@ -393,187 +219,85 @@
 
       tbody.innerHTML = respostas.map(r => {
         const data = new Date(r.criado_em);
-        if (data.getTime() > ontem) ultimasRespostas++;
+        if (data.getTime() > ontem) ultimas++;
         if (r.programa) programas.add(r.programa);
-
         const objetivos = Array.isArray(r.objetivo) ? r.objetivo : [];
-        const interessado = r.programa === 'Sim, com certeza' ? '✓' : '○';
-
-        return `
-          <tr>
-            <td>${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
-            <td><strong>${r.nome}</strong></td>
-            <td>${r.ocupacao || '-'}</td>
-            <td>${r.cidade || '-'}</td>
-            <td>
-              <div class="multi-tags">
-                ${objetivos.map(o => `<span class="tag">${o}</span>`).join('')}
-              </div>
-            </td>
-            <td>${interessado}</td>
-            <td>
-              <div class="btn-download">
-                <button onclick="exportarIndividualCSV(${JSON.stringify(r).replace(/"/g, '&quot;')})">CSV</button>
-                <button onclick="exportarIndividualPDF(${JSON.stringify(r).replace(/"/g, '&quot;')})">PDF</button>
-              </div>
-            </td>
-          </tr>
-        `;
+        const interesse = r.programa === 'Sim, com certeza' ? '✓' : '○';
+        return `<tr>
+          <td>${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
+          <td><strong>${r.nome}</strong></td>
+          <td>${r.ocupacao || '-'}</td>
+          <td>${r.cidade || '-'}</td>
+          <td><div class="multi-tags">${objetivos.map(o => `<span class="tag">${o}</span>`).join('')}</div></td>
+          <td>${interesse}</td>
+          <td><div class="btn-download">
+            <button onclick="exportIndividualCSV(${JSON.stringify(r).replace(/"/g, '&quot;')})">CSV</button>
+            <button onclick="exportIndividualPDF(${JSON.stringify(r).replace(/"/g, '&quot;')})">PDF</button>
+          </div></td>
+        </tr>`;
       }).join('');
 
       document.getElementById('totalRespostas').textContent = respostas.length;
-      document.getElementById('ultimasRespostas').textContent = ultimasRespostas;
+      document.getElementById('ultimasRespostas').textContent = ultimas;
       document.getElementById('totalProgramas').textContent = programas.size;
     }
 
-    async function exportarCSV() {
-      const { data: { session } } = await sbClient.auth.getSession();
+    async function exportCSV() {
       if (!session) return;
-
-      fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
+      const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${session.access_token}`
         }
-      })
-      .then(r => r.json())
-      .then(respostas => {
-        const csv = [
-          ['Data', 'Nome', 'Ocupação', 'Cidade', 'Tempo do Problema', 'Impacto', 'Tentativas', 'Frustrações', 'Futuro', 'Sozinho', 'Prioridade', 'Programa', 'Morofit'].join(',')
-        ];
-
-        respostas.forEach(r => {
-          csv.push([
-            new Date(r.criado_em).toLocaleString('pt-BR'),
-            `"${r.nome}"`,
-            `"${r.ocupacao || ''}"`,
-            `"${r.cidade || ''}"`,
-            r.tempo_problema || '',
-            r.impacto || '',
-            r.tentativas || '',
-            Array.isArray(r.frustracao) ? `"${r.frustracao.join('; ')}"` : '',
-            r.futuro || '',
-            r.sozinho || '',
-            r.prioridade || '',
-            r.programa || '',
-            r.morofit || ''
-          ].join(','));
-        });
-
-        const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `respostas-moromizato-${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-      })
-      .catch(err => alert('Erro ao exportar: ' + err.message));
-    }
-
-    function exportarIndividualCSV(resposta) {
-      const csv = [
-        ['Campo', 'Valor'].join(','),
-        ['Data', `"${new Date(resposta.criado_em).toLocaleString('pt-BR')}"`].join(','),
-        ['Nome', `"${resposta.nome}"`].join(','),
-        ['Ocupação', `"${resposta.ocupacao || ''}"`].join(','),
-        ['Cidade', `"${resposta.cidade || ''}"`].join(','),
-        ['Objetivos', `"${Array.isArray(resposta.objetivo) ? resposta.objetivo.join('; ') : ''}"`].join(','),
-        ['Tempo do Problema', resposta.tempo_problema || ''].join(','),
-        ['Impacto', resposta.impacto || ''].join(','),
-        ['Tentativas', resposta.tentativas || ''].join(','),
-        ['Frustrações', `"${Array.isArray(resposta.frustracao) ? resposta.frustracao.join('; ') : ''}"`].join(','),
-        ['Futuro', resposta.futuro || ''].join(','),
-        ['Sozinho', resposta.sozinho || ''].join(','),
-        ['Prioridade', resposta.prioridade || ''].join(','),
-        ['Programa', resposta.programa || ''].join(','),
-        ['Morofit', resposta.morofit || ''].join(',')
-      ];
-
+      });
+      const respostas = await resp.json();
+      const csv = [['Data', 'Nome', 'Ocupação', 'Cidade', 'Programa'].join(',')];
+      respostas.forEach(r => {
+        csv.push([new Date(r.criado_em).toLocaleString('pt-BR'), `"${r.nome}"`, `"${r.ocupacao || ''}"`, `"${r.cidade || ''}"`, r.programa || ''].join(','));
+      });
       const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `resposta-${resposta.nome}-${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `respostas-${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
     }
 
-    async function exportarPDF() {
-      const { data: { session } } = await sbClient.auth.getSession();
-      if (!session) return;
+    function exportIndividualCSV(r) {
+      const csv = [['Campo', 'Valor'].join(','), ['Nome', `"${r.nome}"`].join(','), ['Ocupação', `"${r.ocupacao || ''}"`].join(',')];
+      const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `resposta-${r.nome}.csv`;
+      link.click();
+    }
 
-      fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
+    async function exportPDF() {
+      if (!session) return;
+      const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${session.access_token}`
         }
-      })
-      .then(r => r.json())
-      .then(respostas => {
-        let html = '<h1>Respostas de Pré-Consulta</h1>';
-        html += `<p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>`;
-        html += `<p>Total de respostas: ${respostas.length}</p><hr/>`;
-
-        respostas.forEach((r, i) => {
-          html += `<h2>${i + 1}. ${r.nome}</h2>`;
-          html += `<p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
-          html += `<p><strong>Ocupação:</strong> ${r.ocupacao || '-'}</p>`;
-          html += `<p><strong>Cidade:</strong> ${r.cidade || '-'}</p>`;
-          html += `<p><strong>Objetivos:</strong> ${Array.isArray(r.objetivo) ? r.objetivo.join(', ') : '-'}</p>`;
-          html += `<p><strong>Tempo do Problema:</strong> ${r.tempo_problema || '-'}</p>`;
-          html += `<p><strong>Impacto:</strong> ${r.impacto || '-'}</p>`;
-          html += `<p><strong>Tentativas:</strong> ${r.tentativas || '-'}</p>`;
-          html += `<p><strong>Frustrações:</strong> ${Array.isArray(r.frustracao) ? r.frustracao.join(', ') : '-'}</p>`;
-          html += `<p><strong>Futuro:</strong> ${r.futuro || '-'}</p>`;
-          html += `<p><strong>Sozinho:</strong> ${r.sozinho || '-'}</p>`;
-          html += `<p><strong>Prioridade:</strong> ${r.prioridade || '-'}</p>`;
-          html += `<p><strong>Programa:</strong> ${r.programa || '-'}</p>`;
-          html += '<hr/>';
-        });
-
-        const element = document.createElement('div');
-        element.innerHTML = html;
-        const opt = {
-          margin: 10,
-          filename: `respostas-moromizato-${new Date().toISOString().split('T')[0]}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-        };
-        html2pdf().set(opt).from(element).save();
-      })
-      .catch(err => alert('Erro ao exportar: ' + err.message));
-    }
-
-    function exportarIndividualPDF(resposta) {
-      const html = `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h1>${resposta.nome}</h1>
-          <p><strong>Data:</strong> ${new Date(resposta.criado_em).toLocaleString('pt-BR')}</p>
-          <hr/>
-          <p><strong>Ocupação:</strong> ${resposta.ocupacao || '-'}</p>
-          <p><strong>Cidade:</strong> ${resposta.cidade || '-'}</p>
-          <p><strong>Objetivos:</strong> ${Array.isArray(resposta.objetivo) ? resposta.objetivo.join(', ') : '-'}</p>
-          <p><strong>Tempo do Problema:</strong> ${resposta.tempo_problema || '-'}</p>
-          <p><strong>Impacto:</strong> ${resposta.impacto || '-'}</p>
-          <p><strong>Tentativas:</strong> ${resposta.tentativas || '-'}</p>
-          <p><strong>Frustrações:</strong> ${Array.isArray(resposta.frustracao) ? resposta.frustracao.join(', ') : '-'}</p>
-          <p><strong>Futuro:</strong> ${resposta.futuro || '-'}</p>
-          <p><strong>Sozinho:</strong> ${resposta.sozinho || '-'}</p>
-          <p><strong>Prioridade:</strong> ${resposta.prioridade || '-'}</p>
-          <p><strong>Programa:</strong> ${resposta.programa || '-'}</p>
-        </div>
-      `;
-
+      });
+      const respostas = await resp.json();
+      let html = '<h1>Respostas de Pré-Consulta</h1>';
+      html += `<p>Total: ${respostas.length}</p>`;
+      respostas.forEach(r => {
+        html += `<h2>${r.nome}</h2><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p><hr/>`;
+      });
       const element = document.createElement('div');
       element.innerHTML = html;
-      const opt = {
-        margin: 10,
-        filename: `resposta-${resposta.nome}-${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-      };
-      html2pdf().set(opt).from(element).save();
+      html2pdf().set({margin: 10, filename: `respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
     }
 
+    function exportIndividualPDF(r) {
+      const html = `<h1>${r.nome}</h1><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
+      const element = document.createElement('div');
+      element.innerHTML = html;
+      html2pdf().set({margin: 10, filename: `resposta-${r.nome}.pdf`}).from(element).save();
+    }
+
+    initApp();
   </script>
 </body>
 </html>
