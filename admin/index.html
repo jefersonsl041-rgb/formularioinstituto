@@ -4,7 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin · Respostas Moromizato</title>
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      document.body.appendChild(s);
+    });
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
