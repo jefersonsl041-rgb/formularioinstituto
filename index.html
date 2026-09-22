@@ -209,10 +209,35 @@ h1{
   inset:-40px !important;
   background:#b8bfbb url("welcome-moromizato/fundo-logo-dourado.jpg") center 30% / cover no-repeat;
   filter:blur(12px);
-  transition:filter .3s ease, background-image .3s ease;
+  background-size:cover;
+  background-position:center;
 }
 .fbg.transition-active{
-  filter:none;
+  animation:slideTransition 3s ease-in-out forwards;
+}
+@keyframes slideTransition{
+  0%{
+    transform:translateX(100%);
+    filter:blur(0px);
+    background-image:url("transicao-1.jpg");
+  }
+  10%{
+    transform:translateX(0%);
+    filter:blur(0px);
+  }
+  50%{
+    transform:translateX(0%);
+    filter:blur(0px);
+  }
+  90%{
+    transform:translateX(-100%);
+    filter:blur(0px);
+  }
+  100%{
+    transform:translateX(-100%);
+    filter:blur(12px);
+    background-image:url("welcome-moromizato/fundo-logo-dourado.jpg");
+  }
 }
 .fveil{background:rgba(250,247,240,.5)}
 .erro{font-size:14px;line-height:1.4;color:#9b2c1d;text-align:center;margin-bottom:10px}
@@ -474,22 +499,18 @@ function showTransition(imgPath){
   const fbg = document.querySelector('.form > .fbg');
   console.log('Transição iniciada:', imgPath);
 
-  // Remover blur e trocar para nova imagem
-  fbg.style.backgroundImage = `url("${imgPath}")`;
+  // Aplicar classe que ativa a animação de slide
   fbg.classList.add('transition-active');
 
-  // Depois de 1.5 segundos, voltar ao normal
+  // A animação dura 3s, depois avançar
   setTimeout(()=>{
-    fbg.style.backgroundImage = `url("welcome-moromizato/fundo-logo-dourado.jpg")`;
     fbg.classList.remove('transition-active');
     console.log('Transição concluída');
 
-    // Esperar transição CSS terminar e depois avançar
-    setTimeout(()=>{
-      idx++;
-      render();
-    }, 300);
-  }, 1500);
+    // Avançar para próxima pergunta
+    idx++;
+    render();
+  }, 3000);
 }
 
 function avancar(){
