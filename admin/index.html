@@ -56,6 +56,30 @@
     .btn-download { display: inline-flex; gap: 4px; font-size: 12px; }
     .btn-download button { padding: 4px 8px; background: var(--gold); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
     .btn-download button:hover { opacity: 0.85; }
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .header { flex-direction: column; gap: 15px; }
+      .header h1 { font-size: 18px; }
+      .header-actions { width: 100%; flex-direction: column; }
+      .btn-export, .btn-logout { width: 100%; padding: 12px; font-size: 14px; }
+      .stats { grid-template-columns: 1fr; }
+      .stat-card { padding: 15px; }
+      .stat-card .value { font-size: 24px; }
+      .table-wrapper { overflow-x: auto; }
+      table { font-size: 12px; }
+      th, td { padding: 10px 8px; }
+      .btn-download { flex-direction: column; width: 100%; }
+      .btn-download button { width: 100%; padding: 8px 4px; font-size: 11px; }
+      .tag { font-size: 10px; padding: 2px 8px; }
+    }
+    @media (max-width: 480px) {
+      .login-card { padding: 20px; margin: 40px 0; }
+      .header h1 { font-size: 16px; }
+      .stat-card .label { font-size: 10px; }
+      .stat-card .value { font-size: 20px; }
+      table { font-size: 11px; }
+      th, td { padding: 8px 5px; }
+    }
   </style>
 </head>
 <body>
