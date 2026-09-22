@@ -259,7 +259,8 @@
           headers: { 'apikey': this.key }
         });
         const respostas = await res.json();
-        let html = '<h1>Respostas de Pré-Consulta</h1><p>Total: ' + respostas.length + '</p><hr/>';
+        let html = '<style>body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.4}h1{font-size:16pt;margin:0 0 10pt 0}h3{font-size:12pt;margin:10pt 0 5pt 0;page-break-after:avoid}p{margin:3pt 0;font-size:9pt}hr{margin:8pt 0;border:none;border-top:1pt solid #ccc}</style>';
+        html += '<h1>Respostas de Pré-Consulta</h1><p><b>Total:</b> ' + respostas.length + '</p><hr/>';
         respostas.forEach((r, i) => {
           html += `<h3>${i+1}. ${r.nome}</h3>`;
           html += `<p><b>Ocupação:</b> ${r.ocupacao || '-'}</p>`;
@@ -268,8 +269,7 @@
         });
         const element = document.createElement('div');
         element.innerHTML = html;
-        element.style.cssText = 'padding:20px;font-family:Arial,sans-serif;';
-        html2pdf().set({margin:10, filename:`respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
+        html2pdf().set({margin:5, filename:`respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
       },
 
       exportIndividualCSV(rStr) {
@@ -285,11 +285,10 @@
       exportIndividualPDF(rStr) {
         const r = JSON.parse(rStr);
         const objs = Array.isArray(r.objetivo) ? r.objetivo.join(', ') : r.objetivo || '';
-        const html = `<h2>${r.nome}</h2><p><b>Ocupação:</b> ${r.ocupacao || '-'}</p><p><b>Cidade:</b> ${r.cidade || '-'}</p><p><b>Objetivo:</b> ${objs}</p><p><b>Data:</b> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
+        const html = `<style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5}h2{font-size:14pt;margin:0 0 15pt 0}p{margin:5pt 0;font-size:10pt}</style><h2>${r.nome}</h2><p><b>Ocupação:</b> ${r.ocupacao || '-'}</p><p><b>Cidade:</b> ${r.cidade || '-'}</p><p><b>Objetivo:</b> ${objs}</p><p><b>Data:</b> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
         const element = document.createElement('div');
         element.innerHTML = html;
-        element.style.cssText = 'padding:20px;font-family:Arial,sans-serif;';
-        html2pdf().set({margin:10, filename:`resposta-${r.nome}.pdf`}).from(element).save();
+        html2pdf().set({margin:8, filename:`resposta-${r.nome}.pdf`}).from(element).save();
       },
 
     };
