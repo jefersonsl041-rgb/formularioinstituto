@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin · Respostas Moromizato</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -106,6 +107,7 @@
         <h1>Respostas de Pré-Consulta</h1>
         <div class="header-actions">
           <button class="btn-export" onclick="app.exportCSV()">📥 CSV Geral</button>
+          <button class="btn-export" onclick="app.exportPDF()">📄 PDF Geral</button>
           <button class="btn-logout" onclick="app.logout()">Sair</button>
         </div>
       </div>
@@ -225,6 +227,7 @@
             <td>${interesse}</td>
             <td><div class="btn-download">
               <button onclick="app.exportIndividualCSV('${rStr}')">CSV</button>
+              <button onclick="app.exportIndividualPDF('${rStr}')">PDF</button>
               </div></td>
           </tr>`;
         }).join('');
@@ -235,23 +238,38 @@
       },
 
       async exportCSV() {
-        if (!this.token) return;
         const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
-          headers: {
-            'apikey': this.key,
-            'Authorization': 'Bearer ' + this.token
-          }
+          headers: { 'apikey': this.key }
         });
         const respostas = await res.json();
-        const csv = [['Data', 'Nome', 'Ocupação', 'Cidade', 'Programa'].join(',')];
+        const csv = [['Data', 'Nome', 'Ocupação', 'Cidade', 'Objetivo'].join(',')];
         respostas.forEach(r => {
-          csv.push([new Date(r.criado_em).toLocaleString('pt-BR'), `"${r.nome}"`, `"${r.ocupacao || ''}"`, `"${r.cidade || ''}"`, r.programa || ''].join(','));
+          const objs = Array.isArray(r.objetivo) ? r.objetivo.join(';') : r.objetivo || '';
+          csv.push([new Date(r.criado_em).toLocaleString('pt-BR'), `"${r.nome}"`, `"${r.ocupacao || ''}"`, `"${r.cidade || ''}"`, `"${objs}"`].join(','));
         });
         const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `respostas-${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
+      },
+
+      async exportPDF() {
+        const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
+          headers: { 'apikey': this.key }
+        });
+        const respostas = await res.json();
+        let html = '<h1>Respostas de Pré-Consulta</h1><p>Total: ' + respostas.length + '</p><hr/>';
+        respostas.forEach((r, i) => {
+          html += `<h3>${i+1}. ${r.nome}</h3>`;
+          html += `<p><b>Ocupação:</b> ${r.ocupacao || '-'}</p>`;
+          html += `<p><b>Cidade:</b> ${r.cidade || '-'}</p>`;
+          html += `<p><b>Data:</b> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p><hr/>`;
+        });
+        const element = document.createElement('div');
+        element.innerHTML = html;
+        element.style.cssText = 'padding:20px;font-family:Arial,sans-serif;';
+        html2pdf().set({margin:10, filename:`respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
       },
 
       exportIndividualCSV(rStr) {
@@ -262,6 +280,16 @@
         link.href = URL.createObjectURL(blob);
         link.download = `resposta-${r.nome}.csv`;
         link.click();
+      },
+
+      exportIndividualPDF(rStr) {
+        const r = JSON.parse(rStr);
+        const objs = Array.isArray(r.objetivo) ? r.objetivo.join(', ') : r.objetivo || '';
+        const html = `<h2>${r.nome}</h2><p><b>Ocupação:</b> ${r.ocupacao || '-'}</p><p><b>Cidade:</b> ${r.cidade || '-'}</p><p><b>Objetivo:</b> ${objs}</p><p><b>Data:</b> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
+        const element = document.createElement('div');
+        element.innerHTML = html;
+        element.style.cssText = 'padding:20px;font-family:Arial,sans-serif;';
+        html2pdf().set({margin:10, filename:`resposta-${r.nome}.pdf`}).from(element).save();
       },
 
     };
