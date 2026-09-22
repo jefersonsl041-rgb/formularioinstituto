@@ -4,13 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin · Respostas Moromizato</title>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      document.body.appendChild(s);
-    });
-  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -89,7 +82,6 @@
         <h1>Respostas de Pré-Consulta</h1>
         <div class="header-actions">
           <button class="btn-export" onclick="app.exportCSV()">📥 CSV Geral</button>
-          <button class="btn-export" onclick="app.exportPDF()">📄 PDF Geral</button>
           <button class="btn-logout" onclick="app.logout()">Sair</button>
         </div>
       </div>
@@ -217,8 +209,7 @@
             <td>${interesse}</td>
             <td><div class="btn-download">
               <button onclick="app.exportIndividualCSV('${rStr}')">CSV</button>
-              <button onclick="app.exportIndividualPDF('${rStr}')">PDF</button>
-            </div></td>
+              </div></td>
           </tr>`;
         }).join('');
 
@@ -257,32 +248,6 @@
         link.click();
       },
 
-      async exportPDF() {
-        if (!this.token) return;
-        const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
-          headers: {
-            'apikey': this.key,
-            'Authorization': 'Bearer ' + this.token
-          }
-        });
-        const respostas = await res.json();
-        let html = '<h1>Respostas de Pré-Consulta</h1>';
-        html += `<p>Total: ${respostas.length}</p>`;
-        respostas.forEach(r => {
-          html += `<h2>${r.nome}</h2><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p><hr/>`;
-        });
-        const element = document.createElement('div');
-        element.innerHTML = html;
-        html2pdf().set({margin: 10, filename: `respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
-      },
-
-      exportIndividualPDF(rStr) {
-        const r = JSON.parse(rStr);
-        const html = `<h1>${r.nome}</h1><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
-        const element = document.createElement('div');
-        element.innerHTML = html;
-        html2pdf().set({margin: 10, filename: `resposta-${r.nome}.pdf`}).from(element).save();
-      }
     };
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
