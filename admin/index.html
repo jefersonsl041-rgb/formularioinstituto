@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin · Respostas Moromizato v2</title>
+  <title>Admin · Respostas Moromizato</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -123,30 +122,24 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
     const SUPABASE_URL = 'https://pvqikdeovfgbslfqjmxy.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu';
     const API = SUPABASE_URL + '/rest/v1';
 
-    let client = null;
+    const sbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
     let session = null;
 
-    async function initApp() {
-      while (!window.supabase) {
-        await new Promise(r => setTimeout(r, 100));
-      }
-      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      checkSession();
-      client.auth.onAuthStateChange(updateUI);
+    function checkSession() {
+      sbClient.auth.getSession().then(({ data }) => {
+        session = data?.session;
+        updateUI(session);
+      });
     }
 
-    async function checkSession() {
-      const { data } = await client.auth.getSession();
-      session = data?.session;
-      updateUI(null, session);
-    }
-
-    function updateUI(evt, sess) {
+    function updateUI(sess) {
       session = sess;
       if (session) {
         document.getElementById('loginCard').style.display = 'none';
@@ -169,7 +162,7 @@
       btn.disabled = true;
       btn.textContent = 'Entrando...';
 
-      const { error } = await client.auth.signInWithPassword({ email, password: senha });
+      const { error } = await sbClient.auth.signInWithPassword({ email, password: senha });
       if (error) {
         err.textContent = error.message;
       }
@@ -177,13 +170,13 @@
       btn.textContent = 'Entrar';
     });
 
-    async function handleLogout() {
-      await client.auth.signOut();
+    window.handleLogout = async function() {
+      await sbClient.auth.signOut();
       session = null;
-      updateUI(null, null);
+      updateUI(null);
       document.getElementById('email').value = '';
       document.getElementById('senha').value = '';
-    }
+    };
 
     async function loadRespostas() {
       if (!session) return;
@@ -242,7 +235,7 @@
       document.getElementById('totalProgramas').textContent = programas.size;
     }
 
-    async function exportCSV() {
+    window.exportCSV = async function() {
       if (!session) return;
       const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
         headers: {
@@ -260,18 +253,18 @@
       link.href = URL.createObjectURL(blob);
       link.download = `respostas-${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
-    }
+    };
 
-    function exportIndividualCSV(r) {
+    window.exportIndividualCSV = function(r) {
       const csv = [['Campo', 'Valor'].join(','), ['Nome', `"${r.nome}"`].join(','), ['Ocupação', `"${r.ocupacao || ''}"`].join(',')];
       const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `resposta-${r.nome}.csv`;
       link.click();
-    }
+    };
 
-    async function exportPDF() {
+    window.exportPDF = async function() {
       if (!session) return;
       const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
         headers: {
@@ -288,16 +281,20 @@
       const element = document.createElement('div');
       element.innerHTML = html;
       html2pdf().set({margin: 10, filename: `respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
-    }
+    };
 
-    function exportIndividualPDF(r) {
+    window.exportIndividualPDF = function(r) {
       const html = `<h1>${r.nome}</h1><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
       const element = document.createElement('div');
       element.innerHTML = html;
       html2pdf().set({margin: 10, filename: `resposta-${r.nome}.pdf`}).from(element).save();
-    }
+    };
 
-    initApp();
+    sbClient.auth.onAuthStateChange((evt, sess) => {
+      updateUI(sess);
+    });
+
+    checkSession();
   </script>
 </body>
 </html>
