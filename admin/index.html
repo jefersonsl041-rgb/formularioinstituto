@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin · Respostas Moromizato</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -277,37 +278,53 @@
   </div>
 
   <script>
-    const API = 'https://pvqikdeovfgbslfqjmxy.supabase.co/rest/v1';
-    const API_KEY = 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu';
+    const SUPABASE_URL = 'https://pvqikdeovfgbslfqjmxy.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu';
+    const API = SUPABASE_URL + '/rest/v1';
 
-    // Credenciais de teste
-    const ADMIN_EMAIL = 'admin@moromizato.com.br';
-    const ADMIN_SENHA = 'senhaSegura2026';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const senha = document.getElementById('senha').value;
       const errDiv = document.getElementById('loginError');
+      const btnLogin = document.querySelector('.btn-login');
 
       errDiv.textContent = '';
+      btnLogin.disabled = true;
+      btnLogin.textContent = 'Entrando...';
 
-      if (email === ADMIN_EMAIL && senha === ADMIN_SENHA) {
-        // Login bem-sucedido
-        sessionStorage.setItem('admin_token', JSON.stringify({
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
-          ts: Date.now()
-        }));
+          password: senha
+        });
+
+        if (error) {
+          errDiv.textContent = 'Email ou senha inválidos.';
+          btnLogin.disabled = false;
+          btnLogin.textContent = 'Entrar';
+          return;
+        }
+
+        // Login bem-sucedido
+        localStorage.setItem('admin_token', data.session.access_token);
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('dashboard').classList.add('active');
         carregarRespostas();
-      } else {
-        errDiv.textContent = 'Email ou senha inválidos.';
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'Entrar';
+      } catch (err) {
+        errDiv.textContent = 'Erro ao fazer login. Tente novamente.';
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'Entrar';
       }
     });
 
-    function logout() {
-      sessionStorage.removeItem('admin_token');
+    async function logout() {
+      await supabase.auth.signOut();
+      localStorage.removeItem('admin_token');
       document.getElementById('loginCard').style.display = 'block';
       document.getElementById('dashboard').classList.remove('active');
       document.getElementById('email').value = '';
@@ -315,14 +332,14 @@
     }
 
     async function carregarRespostas() {
-      const token = sessionStorage.getItem('admin_token');
-      if (!token) return logout();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return logout();
 
       try {
         const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
           headers: {
-            'apikey': API_KEY,
-            'Authorization': `Bearer ${API_KEY}`
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${session.access_token}`
           }
         });
 
@@ -386,11 +403,14 @@
       document.getElementById('totalProgramas').textContent = programas.size;
     }
 
-    function exportarCSV() {
+    async function exportarCSV() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
       fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
         headers: {
-          'apikey': API_KEY,
-          'Authorization': `Bearer ${API_KEY}`
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
       .then(r => r.json())
@@ -452,11 +472,14 @@
       link.click();
     }
 
-    function exportarPDF() {
+    async function exportarPDF() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
       fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
         headers: {
-          'apikey': API_KEY,
-          'Authorization': `Bearer ${API_KEY}`
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
       .then(r => r.json())
@@ -528,12 +551,17 @@
       html2pdf().set(opt).from(element).save();
     }
 
-    // Verificar se já está logado
-    if (sessionStorage.getItem('admin_token')) {
-      document.getElementById('loginCard').style.display = 'none';
-      document.getElementById('dashboard').classList.add('active');
-      carregarRespostas();
-    }
+    // Verificar se já está logado ao carregar a página
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        carregarRespostas();
+      } else {
+        document.getElementById('loginCard').style.display = 'block';
+        document.getElementById('dashboard').classList.remove('active');
+      }
+    });
   </script>
 </body>
 </html>
