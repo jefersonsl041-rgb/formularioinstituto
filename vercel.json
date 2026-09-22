@@ -1,14 +1,14 @@
 {
-  "buildCommand": "echo 'Static site ready for deployment'",
+  "buildCommand": "echo 'Static site ready'",
   "outputDirectory": ".",
-  "framework": "html",
+  "public": true,
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, must-revalidate"
+          "value": "public, max-age=3600"
         }
       ]
     }
