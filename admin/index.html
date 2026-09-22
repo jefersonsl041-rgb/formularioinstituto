@@ -82,9 +82,9 @@
       <div class="header">
         <h1>Respostas de Pré-Consulta</h1>
         <div class="header-actions">
-          <button class="btn-export" onclick="exportCSV()">📥 CSV Geral</button>
-          <button class="btn-export" onclick="exportPDF()">📄 PDF Geral</button>
-          <button class="btn-logout" onclick="handleLogout()">Sair</button>
+          <button class="btn-export" onclick="app.exportCSV()">📥 CSV Geral</button>
+          <button class="btn-export" onclick="app.exportPDF()">📄 PDF Geral</button>
+          <button class="btn-logout" onclick="app.logout()">Sair</button>
         </div>
       </div>
       <div class="stats">
@@ -122,34 +122,162 @@
     </div>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  <script>
+    const app = {
+      url: 'https://pvqikdeovfgbslfqjmxy.supabase.co',
+      key: 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu',
+      token: localStorage.getItem('admin_token') || null,
 
-    const SUPABASE_URL = 'https://pvqikdeovfgbslfqjmxy.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu';
-    const API = SUPABASE_URL + '/rest/v1';
+      async login(email, password) {
+        const res = await fetch(this.url + '/auth/v1/token?grant_type=password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': this.key },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.access_token) {
+          this.token = data.access_token;
+          localStorage.setItem('admin_token', this.token);
+          this.showDashboard();
+          this.loadRespostas();
+          return true;
+        }
+        throw new Error(data.error_description || 'Erro ao fazer login');
+      },
 
-    const sbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-    let session = null;
+      logout() {
+        this.token = null;
+        localStorage.removeItem('admin_token');
+        this.hideDashboard();
+      },
 
-    function checkSession() {
-      sbClient.auth.getSession().then(({ data }) => {
-        session = data?.session;
-        updateUI(session);
-      });
-    }
-
-    function updateUI(sess) {
-      session = sess;
-      if (session) {
+      showDashboard() {
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('dashboard').classList.add('active');
-        loadRespostas();
-      } else {
+      },
+
+      hideDashboard() {
         document.getElementById('loginCard').style.display = 'block';
         document.getElementById('dashboard').classList.remove('active');
+        document.getElementById('email').value = '';
+        document.getElementById('senha').value = '';
+      },
+
+      async loadRespostas() {
+        if (!this.token) return;
+        try {
+          const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
+            headers: {
+              'apikey': this.key,
+              'Authorization': 'Bearer ' + this.token
+            }
+          });
+          if (!res.ok) throw new Error('Erro ao carregar');
+          const dados = await res.json();
+          this.renderRespostas(dados);
+        } catch (err) {
+          console.error(err);
+        }
+      },
+
+      renderRespostas(respostas) {
+        const tbody = document.getElementById('respostasTable');
+        const agora = Date.now();
+        const ontem = agora - 86400000;
+        let ultimas = 0;
+        let programas = new Set();
+
+        if (!respostas.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="loading">Nenhuma resposta</td></tr>';
+          document.getElementById('totalRespostas').textContent = '0';
+          document.getElementById('ultimasRespostas').textContent = '0';
+          document.getElementById('totalProgramas').textContent = '0';
+          return;
+        }
+
+        tbody.innerHTML = respostas.map(r => {
+          const data = new Date(r.criado_em);
+          if (data.getTime() > ontem) ultimas++;
+          if (r.programa) programas.add(r.programa);
+          const objetivos = Array.isArray(r.objetivo) ? r.objetivo : [];
+          const interesse = r.programa === 'Sim, com certeza' ? '✓' : '○';
+          const rStr = JSON.stringify(r).replace(/"/g, '&quot;');
+          return `<tr>
+            <td>${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
+            <td><strong>${r.nome}</strong></td>
+            <td>${r.ocupacao || '-'}</td>
+            <td>${r.cidade || '-'}</td>
+            <td><div class="multi-tags">${objetivos.map(o => `<span class="tag">${o}</span>`).join('')}</div></td>
+            <td>${interesse}</td>
+            <td><div class="btn-download">
+              <button onclick="app.exportIndividualCSV('${rStr}')">CSV</button>
+              <button onclick="app.exportIndividualPDF('${rStr}')">PDF</button>
+            </div></td>
+          </tr>`;
+        }).join('');
+
+        document.getElementById('totalRespostas').textContent = respostas.length;
+        document.getElementById('ultimasRespostas').textContent = ultimas;
+        document.getElementById('totalProgramas').textContent = programas.size;
+      },
+
+      async exportCSV() {
+        if (!this.token) return;
+        const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
+          headers: {
+            'apikey': this.key,
+            'Authorization': 'Bearer ' + this.token
+          }
+        });
+        const respostas = await res.json();
+        const csv = [['Data', 'Nome', 'Ocupação', 'Cidade', 'Programa'].join(',')];
+        respostas.forEach(r => {
+          csv.push([new Date(r.criado_em).toLocaleString('pt-BR'), `"${r.nome}"`, `"${r.ocupacao || ''}"`, `"${r.cidade || ''}"`, r.programa || ''].join(','));
+        });
+        const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `respostas-${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+      },
+
+      exportIndividualCSV(rStr) {
+        const r = JSON.parse(rStr);
+        const csv = [['Campo', 'Valor'].join(','), ['Nome', `"${r.nome}"`].join(','), ['Ocupação', `"${r.ocupacao || ''}"`].join(',')];
+        const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `resposta-${r.nome}.csv`;
+        link.click();
+      },
+
+      async exportPDF() {
+        if (!this.token) return;
+        const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
+          headers: {
+            'apikey': this.key,
+            'Authorization': 'Bearer ' + this.token
+          }
+        });
+        const respostas = await res.json();
+        let html = '<h1>Respostas de Pré-Consulta</h1>';
+        html += `<p>Total: ${respostas.length}</p>`;
+        respostas.forEach(r => {
+          html += `<h2>${r.nome}</h2><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p><hr/>`;
+        });
+        const element = document.createElement('div');
+        element.innerHTML = html;
+        html2pdf().set({margin: 10, filename: `respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
+      },
+
+      exportIndividualPDF(rStr) {
+        const r = JSON.parse(rStr);
+        const html = `<h1>${r.nome}</h1><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
+        const element = document.createElement('div');
+        element.innerHTML = html;
+        html2pdf().set({margin: 10, filename: `resposta-${r.nome}.pdf`}).from(element).save();
       }
-    }
+    };
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -162,139 +290,19 @@
       btn.disabled = true;
       btn.textContent = 'Entrando...';
 
-      const { error } = await sbClient.auth.signInWithPassword({ email, password: senha });
-      if (error) {
+      try {
+        await app.login(email, senha);
+      } catch (error) {
         err.textContent = error.message;
       }
       btn.disabled = false;
       btn.textContent = 'Entrar';
     });
 
-    window.handleLogout = async function() {
-      await sbClient.auth.signOut();
-      session = null;
-      updateUI(null);
-      document.getElementById('email').value = '';
-      document.getElementById('senha').value = '';
-    };
-
-    async function loadRespostas() {
-      if (!session) return;
-      try {
-        const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${session.access_token}`
-          }
-        });
-        if (!resp.ok) throw new Error('Erro ao carregar');
-        const dados = await resp.json();
-        renderRespostas(dados);
-      } catch (err) {
-        console.error(err);
-      }
+    if (app.token) {
+      app.showDashboard();
+      app.loadRespostas();
     }
-
-    function renderRespostas(respostas) {
-      const tbody = document.getElementById('respostasTable');
-      const agora = Date.now();
-      const ontem = agora - 86400000;
-      let ultimas = 0;
-      let programas = new Set();
-
-      if (!respostas.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading">Nenhuma resposta</td></tr>';
-        document.getElementById('totalRespostas').textContent = '0';
-        document.getElementById('ultimasRespostas').textContent = '0';
-        document.getElementById('totalProgramas').textContent = '0';
-        return;
-      }
-
-      tbody.innerHTML = respostas.map(r => {
-        const data = new Date(r.criado_em);
-        if (data.getTime() > ontem) ultimas++;
-        if (r.programa) programas.add(r.programa);
-        const objetivos = Array.isArray(r.objetivo) ? r.objetivo : [];
-        const interesse = r.programa === 'Sim, com certeza' ? '✓' : '○';
-        return `<tr>
-          <td>${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
-          <td><strong>${r.nome}</strong></td>
-          <td>${r.ocupacao || '-'}</td>
-          <td>${r.cidade || '-'}</td>
-          <td><div class="multi-tags">${objetivos.map(o => `<span class="tag">${o}</span>`).join('')}</div></td>
-          <td>${interesse}</td>
-          <td><div class="btn-download">
-            <button onclick="exportIndividualCSV(${JSON.stringify(r).replace(/"/g, '&quot;')})">CSV</button>
-            <button onclick="exportIndividualPDF(${JSON.stringify(r).replace(/"/g, '&quot;')})">PDF</button>
-          </div></td>
-        </tr>`;
-      }).join('');
-
-      document.getElementById('totalRespostas').textContent = respostas.length;
-      document.getElementById('ultimasRespostas').textContent = ultimas;
-      document.getElementById('totalProgramas').textContent = programas.size;
-    }
-
-    window.exportCSV = async function() {
-      if (!session) return;
-      const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-      const respostas = await resp.json();
-      const csv = [['Data', 'Nome', 'Ocupação', 'Cidade', 'Programa'].join(',')];
-      respostas.forEach(r => {
-        csv.push([new Date(r.criado_em).toLocaleString('pt-BR'), `"${r.nome}"`, `"${r.ocupacao || ''}"`, `"${r.cidade || ''}"`, r.programa || ''].join(','));
-      });
-      const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `respostas-${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-    };
-
-    window.exportIndividualCSV = function(r) {
-      const csv = [['Campo', 'Valor'].join(','), ['Nome', `"${r.nome}"`].join(','), ['Ocupação', `"${r.ocupacao || ''}"`].join(',')];
-      const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `resposta-${r.nome}.csv`;
-      link.click();
-    };
-
-    window.exportPDF = async function() {
-      if (!session) return;
-      const resp = await fetch(`${API}/respostas_pre_consulta?select=*&order=criado_em.desc`, {
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-      const respostas = await resp.json();
-      let html = '<h1>Respostas de Pré-Consulta</h1>';
-      html += `<p>Total: ${respostas.length}</p>`;
-      respostas.forEach(r => {
-        html += `<h2>${r.nome}</h2><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p><hr/>`;
-      });
-      const element = document.createElement('div');
-      element.innerHTML = html;
-      html2pdf().set({margin: 10, filename: `respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
-    };
-
-    window.exportIndividualPDF = function(r) {
-      const html = `<h1>${r.nome}</h1><p><strong>Data:</strong> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p>`;
-      const element = document.createElement('div');
-      element.innerHTML = html;
-      html2pdf().set({margin: 10, filename: `resposta-${r.nome}.pdf`}).from(element).save();
-    };
-
-    sbClient.auth.onAuthStateChange((evt, sess) => {
-      updateUI(sess);
-    });
-
-    checkSession();
   </script>
 </body>
 </html>
