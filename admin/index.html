@@ -282,7 +282,32 @@
     const SUPABASE_KEY = 'sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu';
     const API = SUPABASE_URL + '/rest/v1';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabase;
+
+    // Aguardar Supabase SDK carregar
+    function initSupabase() {
+      if (!window.supabase) {
+        setTimeout(initSupabase, 100);
+        return;
+      }
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      setupAuthListener();
+    }
+
+    function setupAuthListener() {
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+          document.getElementById('loginCard').style.display = 'none';
+          document.getElementById('dashboard').classList.add('active');
+          carregarRespostas();
+        } else {
+          document.getElementById('loginCard').style.display = 'block';
+          document.getElementById('dashboard').classList.remove('active');
+        }
+      });
+    }
+
+    initSupabase();
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -551,17 +576,6 @@
       html2pdf().set(opt).from(element).save();
     }
 
-    // Verificar se já está logado ao carregar a página
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        document.getElementById('loginCard').style.display = 'none';
-        document.getElementById('dashboard').classList.add('active');
-        carregarRespostas();
-      } else {
-        document.getElementById('loginCard').style.display = 'block';
-        document.getElementById('dashboard').classList.remove('active');
-      }
-    });
   </script>
 </body>
 </html>
