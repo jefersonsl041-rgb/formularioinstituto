@@ -220,12 +220,9 @@
         <label for="email">Email</label>
         <input type="email" id="email" required>
       </div>
-      <div class="form-group" style="position: relative;">
+      <div class="form-group">
         <label for="senha">Senha</label>
-        <div style="position: relative;">
-          <input type="password" id="senha" required style="padding-right: 40px;">
-          <button type="button" id="toggleSenha" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">👁️</button>
-        </div>
+        <input type="password" id="senha" required>
       </div>
       <button type="submit" class="btn-login">Entrar</button>
       <div class="error" id="loginError"></div>
@@ -286,20 +283,6 @@
     const API = SUPABASE_URL + '/rest/v1';
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // Toggle mostrar/esconder senha
-    document.getElementById('toggleSenha').addEventListener('click', e => {
-      e.preventDefault();
-      const input = document.getElementById('senha');
-      const btn = document.getElementById('toggleSenha');
-      if (input.type === 'password') {
-        input.type = 'text';
-        btn.textContent = '🙈';
-      } else {
-        input.type = 'password';
-        btn.textContent = '👁️';
-      }
-    });
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
