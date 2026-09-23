@@ -193,6 +193,8 @@ h1{
   box-shadow:inset 0 0 16px -4px rgba(255,255,255,.25);
   cursor:pointer;transition:border-color .2s, background .2s, transform .2s var(--ease), box-shadow .2s;
 }
+/* durante a transição de foto o vidro das opções é desligado: recalcular o fundo desfocado enquanto elas deslizam trava o celular */
+.form.transicionando .op{backdrop-filter:none;-webkit-backdrop-filter:none}
 .op:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12);box-shadow:inset 0 0 20px -2px rgba(255,255,255,.35)}
 .op:active{transform:scale(.985)}
 .op .mk{
@@ -519,7 +521,6 @@ const LOGO = "logo-moromizato.png";
   .forEach(src => { new Image().src = src; });
 
 const EASE = "cubic-bezier(.65,0,.35,1)";
-const easeFn = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 const ENTRA = 900, HOLD = 1000, SAI = 1100;
 const ZOOM = { entra: 1.18, pausa: 1.0, fimPausa: 1.04, final: 1.14 };
 const zoomDe = foto => ({ ...ZOOM, ...(foto.zoom || {}) });
@@ -585,22 +586,8 @@ async function fundoEstatico(foto){
   camada.querySelector(".tveil").style.opacity = 1;
 }
 
-function tween(dur, fn){
-  return new Promise(res => {
-    const t0 = performance.now();
-    const passo = now => {
-      const p = Math.min(1, (now - t0) / dur);
-      fn(p);
-      p < 1 ? requestAnimationFrame(passo) : res();
-    };
-    requestAnimationFrame(passo);
-  });
-}
-
-function pintarFoto(img, x, zoom, desfoque){
-  img.style.transform = `translateX(${x}px) scale(${zoom})`;
-  img.style.filter = desfoque > 0 ? `blur(${desfoque}px)` : "none";
-}
+const espera = ms => new Promise(r => setTimeout(r, ms));
+const T = (x, s) => `translateX(${x}px) scale(${s})`;
 
 function mascara(el, lado){
   const g = lado ? `linear-gradient(to ${lado}, transparent 0, #000 var(--fe))` : "";
@@ -643,24 +630,41 @@ async function transicaoFoto(foto){
   const img = camada.querySelector("img"), veu = camada.querySelector(".tveil");
   try { await img.decode(); } catch (e) {}
   const { x0, x1, drift } = posicoes(img, foto);
-  const lerp = (a, b, e) => a + (b - a) * e;
-  pintarFoto(img, x0, Z.entra, 0);
+  img.style.transform = T(x0, Z.entra);
+  // Cópia já desfocada por cima: na saída só a opacidade dela anima. Animar o blur em si recalcula
+  // a foto inteira a cada quadro e trava no celular.
+  const borrada = img.cloneNode();
+  borrada.style.filter = "blur(12px)"; borrada.style.opacity = 0;
+  img.after(borrada);
   const logo = animarLogo(camada, W, F, foto.logoY);
 
-  // 1) a foto entra pela direita empurrando a pergunta (zoom out + motion blur); as bordas se misturam.
+  // Trajeto da foto em uma animação nativa só (roda na placa de vídeo): entra com zoom out,
+  // pausa com arrasto e zoom in leves, sai arrastando com zoom in.
+  const total = ENTRA + HOLD + SAI;
+  const trajeto = [
+    { offset: 0, transform: T(x0, Z.entra), easing: EASE },
+    { offset: ENTRA / total, transform: T(x0, Z.pausa), easing: "linear" },
+    { offset: (ENTRA + HOLD) / total, transform: T(x0 - drift, Z.fimPausa), easing: EASE },
+    { offset: 1, transform: T(x1, Z.final) },
+  ];
+
+  // 1) a foto entra pela direita empurrando a pergunta; as bordas se misturam.
   // O fundo antigo se estende por baixo da borda esfumada da foto, para ela se fundir sem mostrar costura.
+  formCard.classList.add("transicionando");
   antigas.forEach(el => el.style.setProperty("right", `${-(F + (el.matches(".fbg") ? 40 : 0))}px`, "important"));
   ui.forEach(el => mascara(el, "left"));
   const empurra = antigas.concat(ui).map(el =>
     el.animate([{transform:"translateX(0)", "--fe":"0px"},{transform:`translateX(${-W}px)`, "--fe":`${F}px`}], {duration:ENTRA, easing:EASE, fill:"forwards"}));
   camada.style.transform = "";
   camada.animate([{transform:`translateX(${W + F}px)`},{transform:"translateX(0)"}], {duration:ENTRA, easing:EASE});
-  await tween(ENTRA, p => pintarFoto(img, x0, lerp(Z.entra, Z.pausa, easeFn(p)), 0));
+  const movimento = img.animate(trajeto, { duration: total, fill: "forwards" });
+  borrada.animate(trajeto, { duration: total, fill: "forwards" });
+  borrada.animate([{opacity:0},{opacity:1}], { delay: ENTRA + HOLD, duration: SAI, easing: EASE, fill: "forwards" });
 
-  // 2) foto nítida, com arrasto e zoom in bem leves
-  await tween(HOLD, p => pintarFoto(img, x0 - drift * p, lerp(Z.pausa, Z.fimPausa, p), 0));
+  // 2) pausa com a foto nítida
+  await espera(ENTRA + HOLD);
 
-  // 3) continua sendo arrastada (zoom in + motion blur), desfoca e a próxima pergunta entra.
+  // 3) continua sendo arrastada, desfoca e a próxima pergunta entra.
   // O painel do rodapé só aparece depois que a transição termina, para não mostrar borda durante o movimento.
   antigas.forEach(el => { if (el.matches(".tbg")) el.remove(); else { el.hidden = true; el.style.removeProperty("right"); } });
   empurra.forEach(a => a.cancel());
@@ -671,17 +675,17 @@ async function transicaoFoto(foto){
     [{transform:`translateX(${W}px)`, opacity:0},{transform:"translateX(0)", opacity:1}],
     {duration:SAI, easing:EASE}));
   veu.animate([{opacity:0},{opacity:1}], {duration:SAI, easing:EASE, fill:"forwards"});
-  await tween(SAI, p => {
-    const e = easeFn(p);
-    pintarFoto(img, lerp(x0 - drift, x1, e), lerp(Z.fimPausa, Z.final, e), 12 * e);
-  });
+  await movimento.finished;
 
+  // fica só a cópia desfocada, no mesmo formato do fundo estático
+  img.remove();
+  borrada.getAnimations().forEach(a => a.cancel());
+  borrada.style.opacity = "";
+  borrada.style.transform = T(x1, Z.final);
   veu.getAnimations().forEach(a => a.cancel());
   veu.style.opacity = 1;
-  img.style.transform = `translateX(${x1}px) scale(${Z.final})`;
-  img.style.filter = "blur(12px)";
   logo.remove();
-  formCard.classList.remove("chegando");
+  formCard.classList.remove("chegando", "transicionando");
   moving = false;
 }
 
