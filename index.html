@@ -314,12 +314,6 @@ h1{
   </div>
 </section>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <filter id="mblur" x="-10%" y="0" width="120%" height="100%" color-interpolation-filters="sRGB">
-    <feGaussianBlur id="mblurStd" stdDeviation="0 0"/>
-  </filter>
-</svg>
-
 <script>
 /* ---------- PERGUNTAS (editar aqui) ---------- */
 const PERGUNTAS = [
@@ -528,8 +522,6 @@ const easeFn = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 const ENTRA = 900, HOLD = 1000, SAI = 1100;
 const ZOOM = { entra: 1.18, pausa: 1.0, fimPausa: 1.04, final: 1.14 };
 const zoomDe = foto => ({ ...ZOOM, ...(foto.zoom || {}) });
-const MOTION_BLUR = 10;
-const mblur = $("mblurStd");
 const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function fotoPara(i){
@@ -603,12 +595,9 @@ function tween(dur, fn){
   });
 }
 
-// desfoque direcional (motion blur) que cresce no meio do movimento, quando a velocidade é maior
-function pintarFoto(img, x, zoom, desfoque, p){
-  const mb = MOTION_BLUR * Math.sin(Math.PI * p);
-  mblur.setAttribute("stdDeviation", `${mb.toFixed(2)} 0`);
+function pintarFoto(img, x, zoom, desfoque){
   img.style.transform = `translateX(${x}px) scale(${zoom})`;
-  img.style.filter = `url(#mblur) blur(${desfoque}px)`;
+  img.style.filter = desfoque > 0 ? `blur(${desfoque}px)` : "none";
 }
 
 function mascara(el, lado){
@@ -653,7 +642,7 @@ async function transicaoFoto(foto){
   try { await img.decode(); } catch (e) {}
   const { x0, x1, drift } = posicoes(img, foto);
   const lerp = (a, b, e) => a + (b - a) * e;
-  pintarFoto(img, x0, Z.entra, 0, 0);
+  pintarFoto(img, x0, Z.entra, 0);
   const logo = animarLogo(camada, W, F, foto.logoY);
 
   // 1) a foto entra pela direita empurrando a pergunta (zoom out + motion blur); as bordas se misturam.
@@ -664,10 +653,10 @@ async function transicaoFoto(foto){
     el.animate([{transform:"translateX(0)", "--fe":"0px"},{transform:`translateX(${-W}px)`, "--fe":`${F}px`}], {duration:ENTRA, easing:EASE, fill:"forwards"}));
   camada.style.transform = "";
   camada.animate([{transform:`translateX(${W + F}px)`},{transform:"translateX(0)"}], {duration:ENTRA, easing:EASE});
-  await tween(ENTRA, p => pintarFoto(img, x0, lerp(Z.entra, Z.pausa, easeFn(p)), 0, p));
+  await tween(ENTRA, p => pintarFoto(img, x0, lerp(Z.entra, Z.pausa, easeFn(p)), 0));
 
   // 2) foto nítida, com arrasto e zoom in bem leves
-  await tween(HOLD, p => pintarFoto(img, x0 - drift * p, lerp(Z.pausa, Z.fimPausa, p), 0, 0));
+  await tween(HOLD, p => pintarFoto(img, x0 - drift * p, lerp(Z.pausa, Z.fimPausa, p), 0));
 
   // 3) continua sendo arrastada (zoom in + motion blur), desfoca e a próxima pergunta entra.
   // O painel do rodapé só aparece depois que a transição termina, para não mostrar borda durante o movimento.
@@ -682,7 +671,7 @@ async function transicaoFoto(foto){
   veu.animate([{opacity:0},{opacity:1}], {duration:SAI, easing:EASE, fill:"forwards"});
   await tween(SAI, p => {
     const e = easeFn(p);
-    pintarFoto(img, lerp(x0 - drift, x1, e), lerp(Z.fimPausa, Z.final, e), 12 * e, p);
+    pintarFoto(img, lerp(x0 - drift, x1, e), lerp(Z.fimPausa, Z.final, e), 12 * e);
   });
 
   veu.getAnimations().forEach(a => a.cancel());
