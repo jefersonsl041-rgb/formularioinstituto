@@ -507,7 +507,8 @@ function ir(dir, fn){
 // logoY: altura da logo que pulsa (padrão 0.5 = centro)
 // zoom: sobrescreve o zoom da animação só para essa foto (ver ZOOM)
 const TRANSICOES = {
-  3:  { src: "transicao-1.jpg", foco: [0.683, 0.55], zoomMinimo: true, logoY: 0.3 },
+  3:  { src: "transicao-1.jpg", foco: [0.683, 0.55], zoomMinimo: true, logoY: 0.3,
+        zoom: { entra: 1, pausa: 1, fimPausa: 1, final: 1.03 } },
   6:  { src: "transicao-2.jpg", foco: [0.5, 0.5], zoomMinimo: true, logoY: 0.9,
         zoom: { entra: 1.05, fimPausa: 1.01, final: 1.06 } },
   9:  { src: "transicao-3.jpg", foco: [0.5, 0.5], zoomMinimo: true },
