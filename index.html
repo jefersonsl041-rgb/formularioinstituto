@@ -6,7 +6,7 @@
 <!-- v2: transition images enabled -->
 <title>Pré-consulta · Instituto Moromizato</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --page:#ffffff;
@@ -168,6 +168,12 @@ h1{
 .stage.in-left{opacity:0;transform:translateX(-28px);transition:none}
 
 .q h2{font-size:clamp(24px,7vw,28px);line-height:1.22;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.q h2 b{font-weight:800}
+.qimg{
+  display:block;width:100%;aspect-ratio:4/3;object-fit:cover;
+  margin-top:18px;border-radius:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
 .dica{font-size:14px;color:var(--muted);margin-bottom:6px}
 .campo{margin-top:22px;display:grid;gap:10px}
 
@@ -200,47 +206,42 @@ h1{
 .op[aria-checked="true"] .mk{background:var(--gold-grad);border-color:var(--gold)}
 .op[aria-checked="true"] .mk svg{opacity:1;transform:none}
 
-.foot{flex:none;padding:12px 22px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(250,247,240,.85) 60%,rgba(250,247,240,0))}
+.foot{flex:none;padding:12px 22px calc(22px + env(safe-area-inset-bottom))}
+.foot::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(to top,rgba(250,247,240,.85) 60%,rgba(250,247,240,0));
+  transition:opacity .45s ease;
+}
+.form.chegando .foot::before{opacity:0;transition:none}
 
 /* fundo das perguntas: mesma foto da boas-vindas, desfocada */
 .form > *{position:relative;z-index:1}
-.form > .fbg,.form > .fveil{position:absolute;inset:0;z-index:0;pointer-events:none}
+.form > .fbg,.form > .fveil,.form > .tbg{position:absolute;inset:0;z-index:0;pointer-events:none}
 .fbg{
   inset:-40px !important;
   background:#b8bfbb url("welcome-moromizato/fundo-logo-dourado.jpg") center 30% / cover no-repeat;
   filter:blur(12px);
-  background-size:cover;
-  background-position:center;
-}
-.fbg.transition-active{
-  animation:slideTransition 3s ease-in-out forwards;
-}
-@keyframes slideTransition{
-  0%{
-    transform:translateX(100%);
-    filter:blur(0px);
-    background-image:url("transicao-1.jpg");
-  }
-  10%{
-    transform:translateX(0%);
-    filter:blur(0px);
-  }
-  50%{
-    transform:translateX(0%);
-    filter:blur(0px);
-  }
-  90%{
-    transform:translateX(-100%);
-    filter:blur(0px);
-  }
-  100%{
-    transform:translateX(-100%);
-    filter:blur(12px);
-    background-image:url("welcome-moromizato/fundo-logo-dourado.jpg");
-  }
 }
 .fveil{background:rgba(250,247,240,.5)}
-.erro{font-size:14px;line-height:1.4;color:#9b2c1d;text-align:center;margin-bottom:10px}
+
+/* foto de transição: ocupa a altura toda do card e é arrastada na horizontal */
+@property --fe{syntax:"<length>";inherits:false;initial-value:0px}
+.form{--f:140px}
+/* a camada começa --f antes do card: essa faixa é a borda esfumada, que só aparece durante o arrasto */
+.form > .tbg{left:calc(-1 * var(--f))}
+.tbg{
+  overflow:hidden;background:#b8bfbb;
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 var(--f));
+  mask-image:linear-gradient(to right,transparent 0,#000 var(--f));
+}
+.tbg img{
+  position:absolute;top:-40px;left:var(--f);
+  height:calc(100% + 80px);width:auto;max-width:none;
+  will-change:transform,filter;
+}
+.tbg .tveil{position:absolute;inset:0;background:rgba(250,247,240,.5);opacity:0}
+.tbg .tfill{position:absolute;inset:0;background:center / cover no-repeat;filter:blur(28px);transform:scale(1.15)}
+.tbg .tlogo{position:absolute;top:50%;height:auto;opacity:0;transform:translate(-50%,-50%);pointer-events:none}.erro{font-size:14px;line-height:1.4;color:#9b2c1d;text-align:center;margin-bottom:10px}
 .go{
   width:100%;height:56px;border:0;border-radius:999px;
   font:inherit;font-size:16px;font-weight:600;color:var(--text);
@@ -313,6 +314,12 @@ h1{
   </div>
 </section>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="mblur" x="-10%" y="0" width="120%" height="100%" color-interpolation-filters="sRGB">
+    <feGaussianBlur id="mblurStd" stdDeviation="0 0"/>
+  </filter>
+</svg>
+
 <script>
 /* ---------- PERGUNTAS (editar aqui) ---------- */
 const PERGUNTAS = [
@@ -337,8 +344,9 @@ const PERGUNTAS = [
   {id:"prioridade", tipo:"unica",   titulo:"O quanto é prioridade para você resolver isso agora?",
     opcoes:["Baixa prioridade","Moderada","Alta","É minha prioridade número 1"]},
   {id:"morofit",    tipo:"unica",   titulo:"Também temos uma academia (Morofit). Teria interesse em treinar nela?",
+    imagem:{src:"morofit.jpg", pos:"50% 43%"},
     opcoes:["Sim","Não"]},
-  {id:"programa",   tipo:"unica",   titulo:"Você estaria disposto(a) a entrar no programa de acompanhamento exclusivo Moromizato, que inclui exatamente tudo que você precisa para resolver isso definitivamente?",
+  {id:"programa",   tipo:"unica",   titulo:"Entrar em um **Programa de Acompanhamento Exclusivo Moromizato**, que inclui exatamente TUDO que você precisa para resolver isso de uma vez por todas?",
     opcoes:["Sim, com certeza","Provavelmente sim","Talvez","Provavelmente não","Não tenho interesse"]},
 ];
 const ENDPOINT  = "https://pvqikdeovfgbslfqjmxy.supabase.co/functions/v1/enviar-pre-consulta";
@@ -379,7 +387,7 @@ function leaveWelcome(){
     welcome.hidden = true;
     formCard.hidden = false;
     formCard.style.animation = "none"; void formCard.offsetWidth; formCard.style.animation = "";
-    idx = 0; render();
+    idx = 0; fundoEstatico(null); render();
   }, 950);
 }
 
@@ -422,6 +430,8 @@ window.respostas = respostas;
 let idx = 0, moving = false;
 
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// nos títulos, **texto** vira negrito
+const negrito = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
 function valido(p){
   const r = respostas[p.id];
@@ -455,7 +465,8 @@ function render(){
     ).join("");
   }
 
-  stage.innerHTML = `<div class="q"><h2>${esc(p.titulo)}</h2>${p.dica?`<p class="dica">${esc(p.dica)}</p>`:""}<div class="campo" ${p.tipo!=="texto"?`role="${p.tipo==="multipla"?"group":"radiogroup"}"`:""}>${campo}</div></div>`;
+  const imagem = p.imagem ? `<img class="qimg" src="${esc(p.imagem.src)}" alt="" style="object-position:${esc(p.imagem.pos || "50% 50%")}">` : "";
+  stage.innerHTML = `<div class="q"><h2>${negrito(esc(p.titulo))}</h2>${p.dica?`<p class="dica">${esc(p.dica)}</p>`:""}${imagem}<div class="campo" ${p.tipo!=="texto"?`role="${p.tipo==="multipla"?"group":"radiogroup"}"`:""}>${campo}</div></div>`;
   main.scrollTop = 0;
   atualizar();
 
@@ -495,37 +506,200 @@ function ir(dir, fn){
   }, 260);
 }
 
-function showTransition(imgPath){
-  const fbg = document.querySelector('.form > .fbg');
-  console.log('Transição iniciada:', imgPath);
+/* ---------- fotos de transição (índice da pergunta que recebe a foto) ---------- */
+// foco: [x, y] do ponto da foto (0–1) que fica no centro horizontal na pausa, ex.: a logo na parede;
+//   o 3º valor opcional é a altura no card onde esse ponto fica (padrão 0.66, abaixo da logo que pulsa)
+// zoomMinimo: mostra a foto inteira na altura (o arrasto de saída fica curto, o movimento vem mais do zoom)
+// logoY: altura da logo que pulsa (padrão 0.5 = centro)
+// zoom: sobrescreve o zoom da animação só para essa foto (ver ZOOM)
+const TRANSICOES = {
+  3:  { src: "transicao-1.jpg", foco: [0.683, 0.55] },
+  6:  { src: "transicao-2.jpg", foco: [0.5, 0.5], zoomMinimo: true, logoY: 0.9,
+        zoom: { entra: 1.05, fimPausa: 1.01, final: 1.06 } },
+  9:  { src: "transicao-3.jpg", foco: [0.5, 0.5], zoomMinimo: true },
+  12: { src: "transicao-4.jpg", foco: [0.65, 0.42], zoomMinimo: true, logoY: 0.6 },
+};
+const LOGO = "logo-moromizato.png";
+[LOGO, ...Object.values(TRANSICOES).map(t => t.src), ...PERGUNTAS.filter(p => p.imagem).map(p => p.imagem.src)]
+  .forEach(src => { new Image().src = src; });
 
-  // Aplicar classe que ativa a animação de slide
-  fbg.classList.add('transition-active');
+const EASE = "cubic-bezier(.65,0,.35,1)";
+const easeFn = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const ENTRA = 900, HOLD = 1000, SAI = 1100;
+const ZOOM = { entra: 1.18, pausa: 1.0, fimPausa: 1.04, final: 1.14 };
+const zoomDe = foto => ({ ...ZOOM, ...(foto.zoom || {}) });
+const MOTION_BLUR = 10;
+const mblur = $("mblurStd");
+const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // A animação dura 3s, depois avançar
-  setTimeout(()=>{
-    fbg.classList.remove('transition-active');
-    console.log('Transição concluída');
+function fotoPara(i){
+  let foto = null;
+  for (const k in TRANSICOES) if (+k <= i) foto = TRANSICOES[k];
+  return foto;
+}
 
-    // Avançar para próxima pergunta
-    idx++;
-    render();
-  }, 3000);
+function criarCamada(src){
+  const camada = document.createElement("div");
+  camada.className = "tbg"; camada.setAttribute("aria-hidden", "true");
+  // tfill: a mesma foto bem desfocada por trás, cobre qualquer faixa que a foto não alcance (borda esfumada, laterais)
+  camada.innerHTML = `<div class="tfill" style="background-image:url('${src}')"></div><img alt="" src="${src}"><div class="tveil"></div>`;
+  formCard.insertBefore(camada, formCard.querySelector(".progress"));
+  return camada;
+}
+
+// Dimensiona e posiciona a foto: o foco fica no centro horizontal durante a pausa, e sobra largura
+// para cobrir a borda esfumada e para o arrasto de saída (fotos estreitas são ampliadas).
+// x0: posição na pausa (nítida); x1: posição final, desfocada, na pergunta seguinte
+function posicoes(img, foto){
+  const W = formCard.clientWidth, H = formCard.clientHeight;
+  const F = parseFloat(getComputedStyle(formCard).getPropertyValue("--f")) || 0;
+  const [fx, fy, alvoY = 0.66] = foto.foco || [0.5, 0.5];
+  const r = img.naturalWidth / img.naturalHeight;
+  const drift = 24, arrasto = W * 0.3;
+
+  if (foto.zoomMinimo) {
+    // só o suficiente para cobrir o card; na saída, o zoom final garante a margem para o desfoque
+    const h = Math.max(H, W / r), largura = h * r;
+    img.style.height = `${h}px`;
+    img.style.top = `${Math.min(0, Math.max(H - h, H * alvoY - fy * h))}px`;
+    const x0 = Math.min(0, Math.max(W - largura, W / 2 - fx * largura + drift / 2));
+    const limite = W + 40 - largura * (1 + zoomDe(foto).final) / 2;
+    return { x0, x1: Math.min(x0 - drift, Math.max(x0 - drift - arrasto, limite)), drift };
+  }
+
+  const larguraMin = Math.max(
+    W * 1.5 + F + 50,
+    (W / 2 + drift / 2 + arrasto + 40) / (1 - fx),
+    (W / 2 + drift / 2 + F + 10) / fx);
+  const h = Math.max(H + 80, larguraMin / r), largura = h * r;
+  img.style.height = `${h}px`;
+  img.style.top = `${Math.min(-40, Math.max(H + 40 - h, H * alvoY - fy * h))}px`;
+  const x0 = Math.min(-(F + 10), W / 2 - fx * largura + drift / 2);
+  const sobra = x0 - drift + largura - (W + 40);
+  const x1 = x0 - drift - Math.max(0, Math.min(sobra, W * 1.2));
+  return { x0, x1, drift };
+}
+
+async function fundoEstatico(foto){
+  formCard.querySelectorAll(".tbg").forEach(l => l.remove());
+  formCard.querySelectorAll(".fbg,.fveil").forEach(el => { el.hidden = !!foto; });
+  if (!foto) return;
+  const camada = criarCamada(foto.src), img = camada.querySelector("img");
+  try { await img.decode(); } catch (e) {}
+  img.style.transform = `translateX(${posicoes(img, foto).x1}px) scale(${zoomDe(foto).final})`;
+  img.style.filter = "blur(12px)";
+  camada.querySelector(".tveil").style.opacity = 1;
+}
+
+function tween(dur, fn){
+  return new Promise(res => {
+    const t0 = performance.now();
+    const passo = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      fn(p);
+      p < 1 ? requestAnimationFrame(passo) : res();
+    };
+    requestAnimationFrame(passo);
+  });
+}
+
+// desfoque direcional (motion blur) que cresce no meio do movimento, quando a velocidade é maior
+function pintarFoto(img, x, zoom, desfoque, p){
+  const mb = MOTION_BLUR * Math.sin(Math.PI * p);
+  mblur.setAttribute("stdDeviation", `${mb.toFixed(2)} 0`);
+  img.style.transform = `translateX(${x}px) scale(${zoom})`;
+  img.style.filter = `url(#mblur) blur(${desfoque}px)`;
+}
+
+function mascara(el, lado){
+  const g = lado ? `linear-gradient(to ${lado}, transparent 0, #000 var(--fe))` : "";
+  el.style.webkitMaskImage = g; el.style.maskImage = g;
+}
+
+// logo da marca pulsando no centro: surge quando a foto assenta, pulsa na pausa e se dissolve na saída
+function animarLogo(camada, W, F, logoY = 0.5){
+  const logo = document.createElement("img");
+  logo.className = "tlogo"; logo.alt = ""; logo.src = LOGO;
+  logo.style.left = `${F + W / 2}px`;
+  logo.style.width = `${Math.min(W * 0.5, 220)}px`;
+  logo.style.top = `${logoY * 100}%`;
+  camada.append(logo);
+  const total = ENTRA + HOLD + SAI;
+  const k = (t, opacity, s, b) => ({
+    offset: t / total, opacity, easing: "ease-in-out",
+    transform: `translate(-50%,-50%) scale(${s})`,
+    filter: `blur(${b}px)`,
+  });
+  // uma respiração lenta: surge, cresce devagar até o fim da pausa e se dissolve na saída
+  logo.animate([
+    k(0, 0, .94, 6), k(ENTRA * .35, 0, .94, 6), k(ENTRA, .9, 1, 0),
+    k(ENTRA + HOLD * .55, .92, 1.035, 0), k(ENTRA + HOLD + SAI * .15, .85, 1.01, 0),
+    k(ENTRA + HOLD + SAI * .55, 0, 1.06, 8), k(total, 0, 1.06, 8),
+  ], { duration: total, fill: "forwards" });
+  return logo;
+}
+
+async function transicaoFoto(foto){
+  moving = true;
+  const W = formCard.clientWidth;
+  const F = parseFloat(getComputedStyle(formCard).getPropertyValue("--f")) || 0;
+  const Z = zoomDe(foto);
+  const antigas = [...formCard.querySelectorAll(".fbg:not([hidden]),.fveil:not([hidden]),.tbg")];
+  const ui = [...formCard.children].filter(el => !el.matches(".fbg,.fveil,.tbg"));
+  const camada = criarCamada(foto.src);
+  // nasce fora do card: senão, enquanto a foto carrega, ela aparece parada por um quadro (o "piscar")
+  camada.style.transform = `translateX(${W + F}px)`;
+  const img = camada.querySelector("img"), veu = camada.querySelector(".tveil");
+  try { await img.decode(); } catch (e) {}
+  const { x0, x1, drift } = posicoes(img, foto);
+  const lerp = (a, b, e) => a + (b - a) * e;
+  pintarFoto(img, x0, Z.entra, 0, 0);
+  const logo = animarLogo(camada, W, F, foto.logoY);
+
+  // 1) a foto entra pela direita empurrando a pergunta (zoom out + motion blur); as bordas se misturam.
+  // O fundo antigo se estende por baixo da borda esfumada da foto, para ela se fundir sem mostrar costura.
+  antigas.forEach(el => el.style.setProperty("right", `${-(F + (el.matches(".fbg") ? 40 : 0))}px`, "important"));
+  ui.forEach(el => mascara(el, "left"));
+  const empurra = antigas.concat(ui).map(el =>
+    el.animate([{transform:"translateX(0)", "--fe":"0px"},{transform:`translateX(${-W}px)`, "--fe":`${F}px`}], {duration:ENTRA, easing:EASE, fill:"forwards"}));
+  camada.style.transform = "";
+  camada.animate([{transform:`translateX(${W + F}px)`},{transform:"translateX(0)"}], {duration:ENTRA, easing:EASE});
+  await tween(ENTRA, p => pintarFoto(img, x0, lerp(Z.entra, Z.pausa, easeFn(p)), 0, p));
+
+  // 2) foto nítida, com arrasto e zoom in bem leves
+  await tween(HOLD, p => pintarFoto(img, x0 - drift * p, lerp(Z.pausa, Z.fimPausa, p), 0, 0));
+
+  // 3) continua sendo arrastada (zoom in + motion blur), desfoca e a próxima pergunta entra.
+  // O painel do rodapé só aparece depois que a transição termina, para não mostrar borda durante o movimento.
+  antigas.forEach(el => { if (el.matches(".tbg")) el.remove(); else { el.hidden = true; el.style.removeProperty("right"); } });
+  empurra.forEach(a => a.cancel());
+  ui.forEach(el => { el.getAnimations().forEach(a => a.cancel()); mascara(el, null); });
+  formCard.classList.add("chegando");
+  idx++; render();
+  ui.forEach(el => el.animate(
+    [{transform:`translateX(${W}px)`, opacity:0},{transform:"translateX(0)", opacity:1}],
+    {duration:SAI, easing:EASE}));
+  veu.animate([{opacity:0},{opacity:1}], {duration:SAI, easing:EASE, fill:"forwards"});
+  await tween(SAI, p => {
+    const e = easeFn(p);
+    pintarFoto(img, lerp(x0 - drift, x1, e), lerp(Z.fimPausa, Z.final, e), 12 * e, p);
+  });
+
+  veu.getAnimations().forEach(a => a.cancel());
+  veu.style.opacity = 1;
+  img.style.transform = `translateX(${x1}px) scale(${Z.final})`;
+  img.style.filter = "blur(12px)";
+  logo.remove();
+  formCard.classList.remove("chegando");
+  moving = false;
 }
 
 function avancar(){
   if (moving || !valido(PERGUNTAS[idx])) return;
   if (idx === PERGUNTAS.length - 1) return enviar();
-
-  // Mostrar transição após pergunta 3 (índice 2)
-  if (idx === 2) {
-    console.log('Mostrando transição após pergunta 3');
-    moving = true;
-    showTransition('transicao-1.jpg');
-    setTimeout(()=>{ moving = false; }, 2300);
-    return;
-  }
-
+  const foto = TRANSICOES[idx + 1];
+  if (foto && !reduzido) return transicaoFoto(foto);
+  if (foto) fundoEstatico(foto);
   ir(1, ()=>{ idx++; render(); });
 }
 
@@ -553,7 +727,11 @@ async function enviar(){
 function voltar(){
   if (moving) return;
   if (idx === 0) { formCard.hidden = true; playWelcome(); return; }
-  ir(-1, ()=>{ idx--; render(); });
+  ir(-1, ()=>{
+    idx--;
+    if (fotoPara(idx) !== fotoPara(idx + 1)) fundoEstatico(fotoPara(idx));
+    render();
+  });
 }
 
 function finalizar(){
