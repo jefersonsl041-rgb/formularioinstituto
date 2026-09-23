@@ -507,7 +507,7 @@ function ir(dir, fn){
 // logoY: altura da logo que pulsa (padrão 0.5 = centro)
 // zoom: sobrescreve o zoom da animação só para essa foto (ver ZOOM)
 const TRANSICOES = {
-  3:  { src: "transicao-1.jpg", foco: [0.683, 0.55] },
+  3:  { src: "transicao-1.jpg", foco: [0.683, 0.55], zoomMinimo: true, logoY: 0.3 },
   6:  { src: "transicao-2.jpg", foco: [0.5, 0.5], zoomMinimo: true, logoY: 0.9,
         zoom: { entra: 1.05, fimPausa: 1.01, final: 1.06 } },
   9:  { src: "transicao-3.jpg", foco: [0.5, 0.5], zoomMinimo: true },
@@ -554,7 +554,8 @@ function posicoes(img, foto){
     const h = Math.max(H, W / r), largura = h * r;
     img.style.height = `${h}px`;
     img.style.top = `${Math.min(0, Math.max(H - h, H * alvoY - fy * h))}px`;
-    const x0 = Math.min(0, Math.max(W - largura, W / 2 - fx * largura + drift / 2));
+    // o limite direito desconta o arrasto da pausa, para a foto nunca descobrir a borda
+    const x0 = Math.min(0, Math.max(W - largura + drift, W / 2 - fx * largura + drift / 2));
     const limite = W + 40 - largura * (1 + zoomDe(foto).final) / 2;
     return { x0, x1: Math.min(x0 - drift, Math.max(x0 - drift - arrasto, limite)), drift };
   }
