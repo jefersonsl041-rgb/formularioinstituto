@@ -1,6 +1,9 @@
 {
   "buildCommand": "echo 'Static site ready'",
   "outputDirectory": ".",
+  "crons": [
+    { "path": "/api/manter-ativo", "schedule": "0 12 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
