@@ -5,8 +5,8 @@ const SUPABASE_KEY = "sb_publishable_4KZqDuVMsHQhzzZjsRuQUg_ese9wsRu";
 
 module.exports = async function handler(req, res) {
   try {
-    // limit=0: a consulta roda no banco, mas não devolve nenhum dado
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas_pre_consulta?select=id&limit=0`, {
+    // lê de fato uma linha (só o id), para contar como atividade real no banco; nada é devolvido nesta resposta
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas_pre_consulta?select=id&limit=1`, {
       headers: { apikey: SUPABASE_KEY },
     });
     res.status(r.ok ? 200 : 502).json({ ok: r.ok, supabase: r.status, em: new Date().toISOString() });
