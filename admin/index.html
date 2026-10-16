@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin · Respostas Moromizato</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -190,6 +191,7 @@
           });
           if (!res.ok) throw new Error('Erro ao carregar');
           const dados = await res.json();
+          this.dados = dados;
           this.renderRespostas(dados);
         } catch (err) {
           console.error(err);
@@ -211,22 +213,24 @@
           return;
         }
 
-        tbody.innerHTML = respostas.map(r => {
+        // textos digitados pelos pacientes são escapados antes de entrar no HTML do admin
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        tbody.innerHTML = respostas.map((r, i) => {
           const data = new Date(r.criado_em);
           if (data.getTime() > ontem) ultimas++;
           if (r.programa) programas.add(r.programa);
           const objetivos = Array.isArray(r.objetivo) ? r.objetivo : [];
           const interesse = r.programa === 'Sim, com certeza' ? '✓' : '○';
-          const rStr = JSON.stringify(r).replace(/"/g, '&quot;');
           return `<tr>
             <td>${data.toLocaleDateString('pt-BR')} ${data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
-            <td><strong>${r.nome}</strong></td>
-            <td>${r.ocupacao || '-'}</td>
-            <td>${r.cidade || '-'}</td>
-            <td><div class="multi-tags">${objetivos.map(o => `<span class="tag">${o}</span>`).join('')}</div></td>
+            <td><strong>${esc(r.nome)}</strong></td>
+            <td>${esc(r.ocupacao) || '-'}</td>
+            <td>${esc(r.cidade) || '-'}</td>
+            <td><div class="multi-tags">${objetivos.map(o => `<span class="tag">${esc(o)}</span>`).join('')}</div></td>
             <td>${interesse}</td>
             <td><div class="btn-download">
-              <button onclick="app.exportIndividualCSV('${rStr}')">CSV</button>
+              <button onclick="app.exportIndividualPDF(${i})">PDF</button>
+              <button onclick="app.exportIndividualCSV(${i})">CSV</button>
               </div></td>
           </tr>`;
         }).join('');
@@ -236,49 +240,177 @@
         document.getElementById('totalProgramas').textContent = programas.size;
       },
 
-      async exportCSV() {
+      // as 14 perguntas do formulário, na ordem, com a coluna do banco onde a resposta fica
+      perguntas: [
+        ['nome', 'Nome completo'],
+        ['ocupacao', 'Ocupação / profissão'],
+        ['cidade', 'Cidade onde reside'],
+        ['objetivo', 'Principal objetivo hoje'],
+        ['tempo_problema', 'Há quanto tempo o problema incomoda'],
+        ['impacto', 'Impacto na autoestima / qualidade de vida'],
+        ['tentativas', 'O que já fez para resolver'],
+        ['cirurgia', 'Cirurgia plástica ou bariátrica'],
+        ['frustracao', 'O que mais frustra hoje'],
+        ['futuro', 'Como acredita que estará em 2 anos se nada mudar'],
+        ['sozinho', 'Sente que consegue resolver sozinho'],
+        ['prioridade', 'Prioridade para resolver agora'],
+        ['morofit', 'Interesse em treinar na Morofit'],
+        ['programa', 'Interesse no Programa de Acompanhamento Exclusivo'],
+      ],
+
+      async buscarTodas() {
         const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
           headers: { 'apikey': this.key }
         });
-        const respostas = await res.json();
-        const csv = [['Data', 'Nome', 'Ocupação', 'Cidade', 'Objetivo'].join(',')];
-        respostas.forEach(r => {
-          const objs = Array.isArray(r.objetivo) ? r.objetivo.join(';') : r.objetivo || '';
-          csv.push([new Date(r.criado_em).toLocaleString('pt-BR'), `"${r.nome}"`, `"${r.ocupacao || ''}"`, `"${r.cidade || ''}"`, `"${objs}"`].join(','));
-        });
-        const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        if (!res.ok) throw new Error('Erro ao carregar');
+        return res.json();
+      },
+
+      valor(r, coluna, sep = '\n') {
+        let v = r[coluna];
+        if (v == null && r.respostas) v = r.respostas[coluna === 'tempo_problema' ? 'tempo' : coluna];
+        if (Array.isArray(v)) return v.map(x => sep === '\n' ? '• ' + x : x).join(sep);
+        return v == null || v === '' ? '-' : String(v);
+      },
+
+      dataHora(iso) {
+        const d = new Date(iso);
+        return `${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+      },
+
+      nomeArquivo(texto) {
+        return String(texto || 'paciente').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-');
+      },
+
+      baixar(blob, nome) {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `respostas-${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = nome;
         link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+      },
+
+      // ---------- PDF ----------
+      novoPDF() {
+        const { jsPDF } = window.jspdf;
+        return new jsPDF({ unit: 'mm', format: 'a4' });
+      },
+
+      cabecalho(doc, subtitulo) {
+        doc.setFillColor(184, 145, 47);
+        doc.rect(0, 0, 210, 3, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(150, 140, 125);
+        doc.text('INSTITUTO MOROMIZATO  ·  ' + subtitulo, 15, 13, { charSpace: 0.6 });
+      },
+
+      paginaPaciente(doc, r) {
+        this.cabecalho(doc, 'PRÉ-CONSULTA');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(19);
+        doc.setTextColor(28, 23, 18);
+        doc.text(doc.splitTextToSize(r.nome || 'Sem nome', 180), 15, 25);
+        const alturaNome = doc.splitTextToSize(r.nome || '', 180).length * 7.5;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(110, 102, 90);
+        doc.text(`Respondido em ${this.dataHora(r.criado_em)}`, 15, 25 + alturaNome);
+
+        doc.autoTable({
+          startY: 31 + alturaNome,
+          margin: { left: 15, right: 15 },
+          theme: 'plain',
+          body: this.perguntas.slice(1).map(([col, rotulo], i) => [`${i + 2}. ${rotulo}`, this.valor(r, col)]),
+          styles: { font: 'helvetica', fontSize: 10, cellPadding: { top: 3.2, bottom: 3.2, left: 3, right: 3 }, textColor: [28, 23, 18], valign: 'top', overflow: 'linebreak' },
+          columnStyles: {
+            0: { cellWidth: 72, textColor: [110, 102, 90], fontSize: 9 },
+            1: { fontStyle: 'bold' },
+          },
+          alternateRowStyles: { fillColor: [250, 247, 240] },
+          didDrawCell: d => {
+            if (d.section === 'body' && d.column.index === 0) {
+              doc.setDrawColor(230, 223, 207);
+              doc.setLineWidth(0.2);
+              doc.line(15, d.cell.y + d.cell.height, 195, d.cell.y + d.cell.height);
+            }
+          },
+        });
+      },
+
+      rodape(doc) {
+        const total = doc.getNumberOfPages();
+        const gerado = new Date().toLocaleDateString('pt-BR');
+        for (let p = 1; p <= total; p++) {
+          doc.setPage(p);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(160, 152, 140);
+          doc.text(`Gerado em ${gerado}`, 15, 288);
+          doc.text(`Página ${p} de ${total}`, 195, 288, { align: 'right' });
+        }
+      },
+
+      exportIndividualPDF(i) {
+        const r = this.dados[i];
+        const doc = this.novoPDF();
+        this.paginaPaciente(doc, r);
+        this.rodape(doc);
+        doc.save(`Pre-consulta - ${this.nomeArquivo(r.nome)} - ${r.criado_em.slice(0, 10)}.pdf`);
       },
 
       async exportPDF() {
-        const res = await fetch(this.url + '/rest/v1/respostas_pre_consulta?order=criado_em.desc', {
-          headers: { 'apikey': this.key }
+        const respostas = await this.buscarTodas();
+        if (!respostas.length) return alert('Nenhuma resposta para exportar.');
+        const doc = this.novoPDF();
+
+        // página 1: resumo com todos os pacientes
+        this.cabecalho(doc, 'RESPOSTAS DE PRÉ-CONSULTA');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(19);
+        doc.setTextColor(28, 23, 18);
+        doc.text('Resumo das respostas', 15, 25);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(110, 102, 90);
+        doc.text(`${respostas.length} ${respostas.length === 1 ? 'paciente' : 'pacientes'}  ·  cada um tem a ficha completa nas páginas seguintes`, 15, 32);
+        doc.autoTable({
+          startY: 38,
+          margin: { left: 15, right: 15 },
+          head: [['Data', 'Nome', 'Cidade', 'Interesse no programa']],
+          body: respostas.map(r => [new Date(r.criado_em).toLocaleDateString('pt-BR'), r.nome || '-', r.cidade || '-', this.valor(r, 'programa')]),
+          theme: 'plain',
+          headStyles: { fillColor: [184, 145, 47], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+          styles: { font: 'helvetica', fontSize: 9.5, cellPadding: 2.6, textColor: [28, 23, 18] },
+          columnStyles: { 0: { cellWidth: 24 }, 1: { fontStyle: 'bold' } },
+          alternateRowStyles: { fillColor: [250, 247, 240] },
         });
-        const respostas = await res.json();
-        let html = '<style>body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.4}h1{font-size:16pt;margin:0 0 10pt 0}h3{font-size:12pt;margin:10pt 0 5pt 0;page-break-after:avoid}p{margin:3pt 0;font-size:9pt}hr{margin:8pt 0;border:none;border-top:1pt solid #ccc}</style>';
-        html += '<h1>Respostas de Pré-Consulta</h1><p><b>Total:</b> ' + respostas.length + '</p><hr/>';
-        respostas.forEach((r, i) => {
-          html += `<h3>${i+1}. ${r.nome}</h3>`;
-          html += `<p><b>Ocupação:</b> ${r.ocupacao || '-'}</p>`;
-          html += `<p><b>Cidade:</b> ${r.cidade || '-'}</p>`;
-          html += `<p><b>Data:</b> ${new Date(r.criado_em).toLocaleString('pt-BR')}</p><hr/>`;
-        });
-        const element = document.createElement('div');
-        element.innerHTML = html;
-        html2pdf().set({margin:5, filename:`respostas-${new Date().toISOString().split('T')[0]}.pdf`}).from(element).save();
+
+        // uma página por paciente
+        respostas.forEach(r => { doc.addPage(); this.paginaPaciente(doc, r); });
+        this.rodape(doc);
+        doc.save(`Pre-consultas - ${new Date().toISOString().slice(0, 10)}.pdf`);
       },
 
-      exportIndividualCSV(rStr) {
-        const r = JSON.parse(rStr);
-        const csv = [['Campo', 'Valor'].join(','), ['Nome', `"${r.nome}"`].join(','), ['Ocupação', `"${r.ocupacao || ''}"`].join(',')];
-        const blob = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `resposta-${r.nome}.csv`;
-        link.click();
+      // ---------- CSV ----------
+      csvCelula(v) {
+        return `"${String(v ?? '').replace(/"/g, '""')}"`;
+      },
+
+      async exportCSV() {
+        const respostas = await this.buscarTodas();
+        const linhas = [['Data', ...this.perguntas.map(([, rotulo]) => rotulo)].map(c => this.csvCelula(c)).join(';')];
+        respostas.forEach(r => {
+          linhas.push([new Date(r.criado_em).toLocaleString('pt-BR'), ...this.perguntas.map(([col]) => this.valor(r, col, ' | '))].map(c => this.csvCelula(c)).join(';'));
+        });
+        // ﻿ faz o Excel abrir os acentos certinho
+        this.baixar(new Blob(['﻿' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8;' }), `Pre-consultas - ${new Date().toISOString().slice(0, 10)}.csv`);
+      },
+
+      exportIndividualCSV(i) {
+        const r = this.dados[i];
+        const linhas = [['Pergunta', 'Resposta'], ['Data', new Date(r.criado_em).toLocaleString('pt-BR')], ...this.perguntas.map(([col, rotulo]) => [rotulo, this.valor(r, col, ' | ')])];
+        this.baixar(new Blob(['﻿' + linhas.map(l => l.map(c => this.csvCelula(c)).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8;' }), `Pre-consulta - ${this.nomeArquivo(r.nome)} - ${r.criado_em.slice(0, 10)}.csv`);
       }
     };
 
