@@ -256,6 +256,7 @@
         ['prioridade', 'Prioridade para resolver agora'],
         ['morofit', 'Interesse em treinar na Morofit'],
         ['programa', 'Interesse no Programa de Acompanhamento Exclusivo'],
+        ['indicacao', 'Como conheceu o Instituto'],
       ],
 
       async buscarTodas() {
@@ -269,6 +270,8 @@
       valor(r, coluna, sep = '\n') {
         let v = r[coluna];
         if (v == null && r.respostas) v = r.respostas[coluna === 'tempo_problema' ? 'tempo' : coluna];
+        // pergunta 15 fica só no registro completo (respostas); "Outro" vem com o texto que a pessoa escreveu
+        if (coluna === 'indicacao' && v === 'Outro' && r.respostas?.indicacao_outro) v = `Outro: ${r.respostas.indicacao_outro}`;
         if (Array.isArray(v)) return v.map(x => sep === '\n' ? '• ' + x : x).join(sep);
         return v == null || v === '' ? '-' : String(v);
       },

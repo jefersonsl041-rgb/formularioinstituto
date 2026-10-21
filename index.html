@@ -285,7 +285,7 @@ h1{
   <section class="content">
     <p class="eyebrow rise" style="--i:0">Este formulário nos ajuda a preparar a sua consulta com <b>cuidado e atenção</b>. Leva poucos minutos.</p>
     <h1 class="rise" style="--i:1">Bem-vindo ao<br>Instituto Moromizato</h1>
-    <p class="meta rise" style="--i:2">Pré-consulta · 14 perguntas</p>
+    <p class="meta rise" style="--i:2">Pré-consulta · 15 perguntas</p>
 
     <div class="bar rise" style="--i:3">
       <div class="track" id="track">
@@ -342,8 +342,12 @@ const PERGUNTAS = [
   {id:"morofit",    tipo:"unica",   titulo:"Também temos uma academia (Morofit). Teria interesse em treinar nela?",
     imagem:{src:"morofit.jpg", pos:"50% 43%"},
     opcoes:["Sim","Não"]},
-  {id:"programa",   tipo:"unica",   titulo:"Entrar em um **Programa de Acompanhamento Exclusivo Moromizato**, que inclui exatamente TUDO que você precisa para resolver isso de uma vez por todas?",
+  {id:"programa",   tipo:"unica",   titulo:"Você teria desejo de entrar em um **Programa de Acompanhamento Exclusivo Moromizato**, que inclui exatamente TUDO que você precisa para resolver isso de uma vez por todas?",
     opcoes:["Sim, com certeza","Provavelmente sim","Talvez","Provavelmente não","Não tenho interesse"]},
+  // outro: opção que abre um campo de texto; o texto vai em "<id>_outro"
+  {id:"indicacao",  tipo:"unica",   titulo:"Como você conheceu o Instituto Moromizato?",
+    opcoes:["Instagram","Indicação de amigo ou familiar","Indicação de outro profissional de saúde","Google","Academia Morofit","Já sou paciente","Outro"],
+    outro:"Outro", outroDica:"Conte pra gente como nos conheceu"},
 ];
 const ENDPOINT  = "https://pvqikdeovfgbslfqjmxy.supabase.co/functions/v1/enviar-pre-consulta";
 const VIDEO_SRC = "";   // ex.: "drone-clinica.mp4" (curto, em loop, sem áudio)
@@ -432,6 +436,7 @@ const negrito = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 function valido(p){
   const r = respostas[p.id];
   if (p.tipo === "multipla") return Array.isArray(r) && r.length > 0;
+  if (p.outro && r === p.outro) return (respostas[p.id + "_outro"] || "").trim().length > 0;
   return typeof r === "string" && r.trim().length > 0;
 }
 
@@ -459,6 +464,9 @@ function render(){
     campo = p.opcoes.map((o,i)=>
       `<button type="button" class="op" role="${multi?"checkbox":"radio"}" aria-checked="${sel.includes(o)}" data-i="${i}"><span class="mk">${CHECK}</span><span>${esc(o)}</span></button>`
     ).join("");
+    if (p.outro) {
+      campo += `<input class="txt" id="inOutro" type="text" maxlength="200" placeholder="${esc(p.outroDica || "Escreva aqui")}" autocomplete="off" value="${esc(respostas[p.id + "_outro"] || "")}" ${respostas[p.id] === p.outro ? "" : "hidden"}>`;
+    }
   }
 
   const imagem = p.imagem ? `<img class="qimg" src="${esc(p.imagem.src)}" alt="" style="object-position:${esc(p.imagem.pos || "50% 50%")}">` : "";
@@ -471,6 +479,11 @@ function render(){
     input.addEventListener("input", ()=>{ respostas[p.id] = input.value; atualizar(); });
     input.addEventListener("keydown", e=>{ if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); avancar(); } });
     setTimeout(()=>input.focus({preventScroll:true}), 450);
+  }
+  const outro = $("inOutro");
+  if (outro) {
+    outro.addEventListener("input", ()=>{ respostas[p.id + "_outro"] = outro.value; atualizar(); });
+    outro.addEventListener("keydown", e=>{ if (e.key === "Enter") { e.preventDefault(); avancar(); } });
   }
 }
 
@@ -486,6 +499,12 @@ stage.addEventListener("click", e=>{
   } else {
     respostas[p.id] = o;
     stage.querySelectorAll(".op").forEach(x => x.setAttribute("aria-checked", x === b));
+    const outro = $("inOutro");
+    if (outro) {
+      outro.hidden = o !== p.outro;
+      if (o === p.outro) { respostas[p.id + "_outro"] = outro.value; outro.focus(); }
+      else delete respostas[p.id + "_outro"];
+    }
     atualizar();
   }
 });
